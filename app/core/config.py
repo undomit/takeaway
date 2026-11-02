@@ -1,7 +1,7 @@
 """Validated environment settings, shared through an overridable dependency."""
 
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import Depends
 from pydantic import Field, SecretStr, field_validator
@@ -47,6 +47,7 @@ class MigrationSettings(EnvironmentSettings):
 
 
 class Settings(EnvironmentSettings):
+    payment_gateway: Literal["mock"] = "mock"
     database_url: SecretStr
     _validate_url = field_validator("database_url")(validate_database_url)
     platform_currency: str = Field(pattern=r"^[A-Z]{3}$")
