@@ -17,3 +17,8 @@ services:
 
 volumes:
   postgres_test_data:
+
+# Host-run tests need a reachable loopback port; production remains internal.
+networks:
+  database:
+    internal: false

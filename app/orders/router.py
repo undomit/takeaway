@@ -23,7 +23,7 @@ from app.orders.schemas import (
     StatusChangeIn,
 )
 from app.payments.dependencies import PaymentGatewayDep
-from app.users.models import User
+from app.users.identity import Principal
 from app.users.roles import Role
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -32,7 +32,7 @@ router = APIRouter(prefix="/orders", tags=["orders"])
 @router.post("", response_model=CreationReceipt, status_code=201)
 def place_order(
     request: OrderCreateIn,
-    customer: Annotated[User, require_role(Role.CUSTOMER)],
+    customer: Annotated[Principal, require_role(Role.CUSTOMER)],
     key: IdempotencyKey,
     session: SessionDep,
     settings: SettingsDep,
@@ -74,7 +74,7 @@ def read_order(
 def change_status(
     oid: UUID,
     request: StatusChangeIn,
-    actor: Annotated[User, require_role(Role.CUSTOMER, Role.STAFF)],
+    actor: Annotated[Principal, require_role(Role.CUSTOMER, Role.STAFF)],
     session: SessionDep,
     _query: Annotated[NoQueryParameters, Query()],
 ) -> OrderDetail:

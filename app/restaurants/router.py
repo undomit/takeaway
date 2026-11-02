@@ -16,7 +16,8 @@ from app.restaurants.schemas import (
     RestaurantPage,
     RestaurantUpdateIn,
 )
-from app.users.models import Role, User
+from app.users.identity import Principal
+from app.users.roles import Role
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
 
@@ -39,7 +40,7 @@ def read_restaurant(
 def set_accepting_orders(
     rid: PositiveId,
     data: AcceptingOrdersIn,
-    staff: Annotated[User, require_role(Role.STAFF)],
+    staff: Annotated[Principal, require_role(Role.STAFF)],
     session: SessionDep,
     _query: Annotated[NoQueryParameters, Query()],
 ) -> RestaurantOut:
@@ -51,7 +52,7 @@ def set_accepting_orders(
 @router.post("", response_model=RestaurantOut, status_code=201)
 def create_restaurant(
     data: RestaurantCreateIn,
-    _admin: Annotated[User, require_role(Role.ADMIN)],
+    _admin: Annotated[Principal, require_role(Role.ADMIN)],
     session: SessionDep,
     _query: Annotated[NoQueryParameters, Query()],
 ) -> RestaurantOut:
@@ -62,7 +63,7 @@ def create_restaurant(
 def update_restaurant(
     rid: PositiveId,
     data: RestaurantUpdateIn,
-    _admin: Annotated[User, require_role(Role.ADMIN)],
+    _admin: Annotated[Principal, require_role(Role.ADMIN)],
     session: SessionDep,
     _query: Annotated[NoQueryParameters, Query()],
 ) -> RestaurantOut:

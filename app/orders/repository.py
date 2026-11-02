@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.orders.models import Order, OrderLine, OrderStatusChange
 from app.orders.pagination import OrderCursor
 from app.orders.status import ACTIVE_STATUSES
-from app.users.models import User
+from app.users.identity import Principal
 from app.users.roles import Role
 
 
@@ -66,7 +66,7 @@ def get_initial_change(session: Session, order_id: UUID) -> OrderStatusChange | 
     )
 
 
-def visible_to(user: User) -> Select[tuple[Order]]:
+def visible_to(user: Principal) -> Select[tuple[Order]]:
     """All read paths start here; cursors and filters can only narrow this scope."""
     query = select(Order)
     if user.role == Role.CUSTOMER:
@@ -78,13 +78,13 @@ def visible_to(user: User) -> Select[tuple[Order]]:
     return query.where(false())
 
 
-def get_visible(session: Session, user: User, order_id: UUID) -> Order | None:
+def get_visible(session: Session, user: Principal, order_id: UUID) -> Order | None:
     return session.scalar(visible_to(user).where(Order.id == order_id))
 
 
 def list_visible(
     session: Session,
-    user: User,
+    user: Principal,
     *,
     limit: int | None = None,
     cursor: OrderCursor | None = None,
@@ -112,7 +112,7 @@ def update_status(session: Session, order_id: UUID, expected: str, target: str) 
 
 
 def get_visible_detail(
-    session: Session, user: User, order_id: UUID
+    session: Session, user: Principal, order_id: UUID
 ) -> tuple[Order, list[OrderStatusChange]] | None:
     """Read mutable status/timestamps and history at one statement snapshot.
 

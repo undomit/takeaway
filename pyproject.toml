@@ -71,3 +71,25 @@ forbidden_modules = ["fastapi", "starlette"]
 name = "Order, menu and restaurant dependencies point one way"
 type = "layers"
 layers = ["app.orders", "app.menu", "app.restaurants"]
+
+[[tool.importlinter.contracts]]
+name = "Users never depend on auth (auth calls users services)"
+type = "forbidden"
+source_modules = ["app.users.service", "app.users.repository", "app.users.models", "app.users.schemas"]
+forbidden_modules = ["app.auth"]
+
+[[tool.importlinter.contracts]]
+name = "Payments are independent of other features"
+type = "forbidden"
+source_modules = ["app.payments"]
+forbidden_modules = ["app.auth", "app.users", "app.restaurants", "app.menu", "app.orders"]
+
+[[tool.importlinter.contracts]]
+name = "Services remain independent of transport"
+type = "forbidden"
+source_modules = [
+    "app.auth.service", "app.users.service", "app.restaurants.service",
+    "app.menu.service", "app.orders.service",
+]
+forbidden_modules = ["fastapi", "starlette"]
+allow_indirect_imports = true

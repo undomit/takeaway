@@ -10,14 +10,15 @@ from app.core.db import SessionDep
 from app.errors import Forbidden, NotAuthenticated
 from app.security import decode_access_token
 from app.users import service as users
-from app.users.models import Role, User
+from app.users.identity import Principal
+from app.users.roles import Role
 
 _oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", auto_error=False)
 
 
 def get_current_user(
     token: Annotated[str | None, Depends(_oauth2)], session: SessionDep, settings: SettingsDep
-) -> User:
+) -> Principal:
     if not token:
         raise NotAuthenticated()
     identity = decode_access_token(token, settings.jwt_secret.get_secret_value())
@@ -27,11 +28,11 @@ def get_current_user(
     return user
 
 
-CurrentUser = Annotated[User, Depends(get_current_user)]
+CurrentUser = Annotated[Principal, Depends(get_current_user)]
 
 
 def require_role(*roles: Role):
-    def check_role(user: CurrentUser) -> User:
+    def check_role(user: CurrentUser) -> Principal:
         if user.role not in roles:
             raise Forbidden()
         return user

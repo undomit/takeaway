@@ -40,7 +40,7 @@ from app.payments.errors import PaymentDeclined, PaymentUnavailable
 from app.payments.gateway import PaymentGateway, PaymentOutcome
 from app.restaurants import service as restaurants
 from app.users import service as users
-from app.users.models import User
+from app.users.identity import Principal
 from app.users.roles import Role
 
 
@@ -200,7 +200,7 @@ def _detail(
     )
 
 
-def get_order(session: Session, user: User, order_id: UUID) -> OrderDetail:
+def get_order(session: Session, user: Principal, order_id: UUID) -> OrderDetail:
     result = repository.get_visible_detail(session, user, order_id)
     if result is None:
         raise NotFound()
@@ -208,7 +208,9 @@ def get_order(session: Session, user: User, order_id: UUID) -> OrderDetail:
     return _detail(session, order, history)
 
 
-def list_orders(session: Session, user: User, query: OrderListQuery) -> OrderPage | ActiveOrders:
+def list_orders(
+    session: Session, user: Principal, query: OrderListQuery
+) -> OrderPage | ActiveOrders:
     if query.active == "true":
         if user.role != Role.STAFF:
             raise Forbidden()
@@ -232,7 +234,7 @@ def list_orders(session: Session, user: User, query: OrderListQuery) -> OrderPag
 
 
 def change_status(
-    session: Session, user: User, order_id: UUID, request: StatusChangeIn
+    session: Session, user: Principal, order_id: UUID, request: StatusChangeIn
 ) -> OrderDetail:
     """Compare-and-set and its append-only event commit as one transaction."""
     try:
