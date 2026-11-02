@@ -1,0 +1,15 @@
+# Allowlist: credentials, local environments, VCS and test data never enter the context.
+*
+!Dockerfile
+!pyproject.toml
+!uv.lock
+!README.md
+!alembic.ini
+!alembic/
+!alembic/**
+!app/
+!app/**
+**/__pycache__/
+**/*.pyc
+!docker/
+!docker/uvicorn-logging.json

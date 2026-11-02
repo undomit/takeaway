@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "server": {"()": "app.core.request_logging.SafeServerFormatter"},
+    "request": {"format": "%(message)s"}
+  },
+  "handlers": {
+    "server": {"class": "logging.StreamHandler", "stream": "ext://sys.stdout", "formatter": "server"},
+    "request": {"class": "logging.StreamHandler", "stream": "ext://sys.stdout", "formatter": "request"}
+  },
+  "loggers": {
+    "uvicorn": {"handlers": ["server"], "level": "INFO", "propagate": false},
+    "uvicorn.error": {"level": "INFO"},
+    "uvicorn.access": {"handlers": [], "propagate": false},
+    "takeaway.requests": {"handlers": ["request"], "level": "INFO", "propagate": false}
+  }
+}

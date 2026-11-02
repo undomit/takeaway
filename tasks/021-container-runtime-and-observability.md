@@ -1,6 +1,6 @@
 # 021 — Containerise the app and migration lifecycle
 
-Status: planned
+Status: complete
 
 Depends on: [019](019-concurrency-regressions.md), [020](020-snapshot-and-authorization-regressions.md)
 
@@ -21,3 +21,9 @@ Build the image, prove its process is non-root, start db/migrate/app and verify 
 ## Completion boundary
 
 Complete this scope and its focused verification in one reviewable change. Keep preceding functionality passing; do not leave required tests or migration changes to a later task. Follow the shared completion rules in [README](README.md).
+
+## Verification
+
+`docker build -t takeaway-app:task021 .` passed. `python3 scripts/runtime_smoke.py --image takeaway-app:task021` passed all six stages in a randomly named isolated Compose project: failed migrations block app startup; successful migrations precede a healthy UID 10001 app with no app/db port bindings or owner credentials; safe correlated JSON logs; readiness/liveness during outage and recovery; committed data survives database restart; SIGTERM exits 0 after both workers finish. The smoke project and its disposable volume were removed.
+
+`uv run --locked pytest -W error -q` — 84 passed. Ruff lint/format and all 3 import-linter contracts passed. Two focused request-log scenarios cover success, validation, unknown paths and unexpected-error correlation/redaction. The allowlisted context excludes dotenv/VCS/test data; runtime contains neither uv nor development dependencies. Explicit project-wheel reinstall prevents stale source in cached builds. See [container runtime](../docs/container-runtime.md) for configuration and lifecycle. The internal HTTP nginx placeholder is completed with public TLS/limits in task 022.
