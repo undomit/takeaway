@@ -1,0 +1,67 @@
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "takeaway"
+version = "0.1.0"
+description = "A modular monolith for restaurant takeaway ordering"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "alembic>=1.14,<2",
+    "fastapi>=0.115,<1",
+    "psycopg[binary]>=3.2,<4",
+    "pydantic>=2.10,<3",
+    "pydantic-settings>=2.7,<3",
+    "pwdlib[argon2]>=0.2,<1",
+    "pyjwt>=2.10,<3",
+    "sqlalchemy>=2.0,<2.1",
+    "uvicorn>=0.34,<1",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16,<3",
+    "import-linter>=2.1,<3",
+    "pytest>=8.3,<10",
+    "ruff>=0.9,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-config --strict-markers"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.importlinter]
+root_package = "app"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Core does not depend on feature modules"
+type = "forbidden"
+source_modules = ["app.core"]
+forbidden_modules = [
+    "app.auth", "app.users", "app.restaurants", "app.menu", "app.orders", "app.payments",
+]
+
+[[tool.importlinter.contracts]]
+name = "Domain errors are independent of HTTP"
+type = "forbidden"
+source_modules = ["app.errors"]
+forbidden_modules = ["fastapi", "starlette"]
+
+[[tool.importlinter.contracts]]
+name = "Order, menu and restaurant dependencies point one way"
+type = "layers"
+layers = ["app.orders", "app.menu", "app.restaurants"]
