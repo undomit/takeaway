@@ -8,10 +8,11 @@ from app.auth.schemas import RegisterIn
 from app.core.config import Settings
 from app.security import create_access_token
 from app.users import service as users
-from app.users.models import Role, User
+from app.users.identity import Principal
+from app.users.roles import Role
 
 
-def register_customer(session: Session, account: RegisterIn) -> User:
+def register_customer(session: Session, account: RegisterIn) -> Principal:
     return users.register_customer(session, account)
 
 

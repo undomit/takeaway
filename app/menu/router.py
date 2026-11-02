@@ -20,10 +20,11 @@ from app.menu.schemas import (
     MenuOut,
     SalePriceIn,
 )
-from app.users.models import Role, User
+from app.users.identity import Principal
+from app.users.roles import Role
 
 router = APIRouter(prefix="/restaurants", tags=["menu"])
-Staff = Annotated[User, require_role(Role.STAFF)]
+Staff = Annotated[Principal, require_role(Role.STAFF)]
 EmptyQuery = Annotated[NoQueryParameters, Query()]
 
 
