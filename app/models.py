@@ -5,5 +5,6 @@ complete before autogenerate/check. This is metadata wiring, not a use-case quer
 """
 
 from app.menu.models import MenuCategory, MenuItem  # noqa: F401
+from app.orders.models import Order, OrderLine, OrderStatusChange  # noqa: F401
 from app.restaurants.models import Restaurant  # noqa: F401
 from app.users.models import User  # noqa: F401
