@@ -34,6 +34,10 @@ packages = ["app"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--strict-config --strict-markers"
+markers = [
+    "integration: requires the dedicated PostgreSQL test database",
+    "concurrency: uses committed data and separate database connections",
+]
 
 [tool.ruff]
 target-version = "py312"

@@ -223,3 +223,4 @@ __marimo__/
 .env.*
 !.env.example
 .import_linter_cache/
+!.env.test.example

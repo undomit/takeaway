@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: takeaway_bootstrap
+      POSTGRES_PASSWORD: ${DB_BOOTSTRAP_PASSWORD:-}
+      POSTGRES_DB: takeaway
+      MIGRATION_DB_USER: takeaway_owner
+      MIGRATION_DB_PASSWORD: ${DB_MIGRATION_PASSWORD:-}
+      RUNTIME_DB_USER: takeaway_runtime
+      RUNTIME_DB_PASSWORD: ${DB_RUNTIME_PASSWORD:-}
+      TZ: UTC
+      PGTZ: UTC
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/01-roles.sql:/docker-entrypoint-initdb.d/01-roles.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

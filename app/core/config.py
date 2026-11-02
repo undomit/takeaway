@@ -6,9 +6,11 @@ from typing import Annotated
 from fastapi import Depends
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
+from sqlalchemy.exc import ArgumentError
 
 
-class Settings(BaseSettings):
+class EnvironmentSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -17,6 +19,33 @@ class Settings(BaseSettings):
         hide_input_in_errors=True,
     )
 
+
+def validate_database_url(secret: SecretStr) -> SecretStr:
+    try:
+        url = make_url(secret.get_secret_value())
+        valid = (
+            url.drivername == "postgresql+psycopg"
+            and url.username
+            and url.password
+            and url.host
+            and url.database
+            and (url.port is None or 1 <= url.port <= 65535)
+        )
+    except (ArgumentError, ValueError):
+        valid = False
+    if not valid:
+        raise ValueError("Use a complete postgresql+psycopg URL with database credentials")
+    return secret
+
+
+class MigrationSettings(EnvironmentSettings):
+    migration_database_url: SecretStr
+    _validate_url = field_validator("migration_database_url")(validate_database_url)
+
+
+class Settings(EnvironmentSettings):
+    database_url: SecretStr
+    _validate_url = field_validator("database_url")(validate_database_url)
     platform_currency: str = Field(pattern=r"^[A-Z]{3}$")
     jwt_secret: SecretStr
 
