@@ -23,7 +23,7 @@ Python 3.12 is specified by `.python-version` and `requires-python`. Commit `uv.
 uv run --locked uvicorn app.main:app --reload
 ```
 
-`GET /healthz` returns `{"status":"ok"}`. OpenAPI is available at `/docs`. The feature packages and `/api/v1` router composition are in place; business endpoints arrive in their numbered tasks. `GET /readyz` returns `{"status":"ready"}` after a database ping, or `503 {"status":"not_ready"}` if PostgreSQL is unavailable. Liveness does not contact the database. The app creates its connection pool lazily and disposes it on shutdown.
+`GET /healthz` returns `{"status":"ok"}`. OpenAPI is available at `/docs`. All initial-release business routes are implemented under `/api/v1`; see the [route and permission matrix](docs/api-contract.md#route-and-permission-matrix). `GET /readyz` returns `{"status":"ready"}` after a database ping, or `503 {"status":"not_ready"}` if PostgreSQL is unavailable. Liveness does not contact the database. The app creates its connection pool lazily and disposes it on shutdown.
 
 Run the foundation checks without a running database or real secrets:
 
@@ -38,11 +38,11 @@ TestClient uses the httpx2 dependency recommended by the current [Starlette docu
 
 `app.core.config.get_settings()` is cached per process. Dependencies use `SettingsDep`; tests may set `application.dependency_overrides[get_settings]` before entering TestClient, or call `create_app(settings=Settings(...))`. Both startup validation and request dependency resolution honour the override. A direct `Settings(...)` also reads the environment/dotenv unless `_env_file=None` is specified. Clear `get_settings.cache_clear()` when deliberately changing environment configuration within one process.
 
-Feature routers handle HTTP, services own use cases and their transactions, and repositories own only queries. Domain errors in `app/errors.py` are independent of HTTP; `app/exception_handlers.py` maps their categories to response statuses. Feature-specific errors subclass the appropriate category and define their machine code and safe detail. Validation errors retain FastAPI's standard detail-list shape; submitted input metadata is omitted so passwords and whole request bodies are not reflected in error responses. The initial import-linter contracts protect core independence, HTTP-free domain errors and one-way orders/menu/restaurants imports; task 023 extends enforcement across the completed application.
+Feature routers handle HTTP, services own use cases and their transactions, and repositories own only queries. Domain errors in `app/errors.py` are independent of HTTP; `app/exception_handlers.py` maps their categories to response statuses. Feature-specific errors subclass the appropriate category and define their machine code and safe detail. Validation errors retain FastAPI's standard detail-list shape; submitted input metadata is omitted so passwords and whole request bodies are not reflected in error responses. The initial import-linter contracts protect core independence, HTTP-free domain errors and one-way orders/menu/restaurants imports; task 023 [enforces boundaries across the completed application](docs/ci.md).
 
 ## PostgreSQL and migrations
 
-Set distinct DB_BOOTSTRAP_PASSWORD, DB_MIGRATION_PASSWORD and DB_RUNTIME_PASSWORD values in `.env`, and update DATABASE_URL/MIGRATION_DATABASE_URL with the corresponding credentials. Generate URL-safe passwords or percent-encode reserved URL characters. The application reads only DATABASE_URL; Alembic reads only MIGRATION_DATABASE_URL and does not require JWT/currency settings. Both URLs require the `postgresql+psycopg` driver. Keep migration credentials out of the future deployed app container.
+Set distinct DB_BOOTSTRAP_PASSWORD, DB_MIGRATION_PASSWORD and DB_RUNTIME_PASSWORD values in `.env`, and update DATABASE_URL/MIGRATION_DATABASE_URL with the corresponding credentials. Generate URL-safe passwords or percent-encode reserved URL characters. The application reads only DATABASE_URL; Alembic reads only MIGRATION_DATABASE_URL and does not require JWT/currency settings. Both URLs require the `postgresql+psycopg` driver. Keep migration credentials out of the deployed app container.
 
 For a host-run development app:
 
@@ -223,7 +223,7 @@ Tasks 017–020 complete order reads, polling and fulfilment verification. `GET 
 
 `POST /api/v1/orders/{oid}/status-changes` is customer/staff-only and enforces the transition table after scope. Its expected-status UPDATE and one authenticated history entry commit together. A concurrent loser returns 409 status_conflict; history failure rolls back both the status and timestamp. Creation replay still returns the original pending receipt. No payment/refund operation runs during a status change.
 
-Customers poll detail about every 10 seconds until terminal; staff poll the complete active list about every 10 seconds. See [order fulfilment](docs/order-fulfilment.md) for behavior and [the completed coverage matrix](docs/testing-coverage.md) for named tests against DESIGN §§8/10. Focused test coverage resumes for these tasks, including previously deferred core domain cases. The full suite has 82 passing tests, with real PostgreSQL, real JWT login, all 147 pure transition/role combinations, snapshot/permission/token/payment regressions and deterministic races on independent committed connections. Run the verification commands above; committed suites must run serially against the exclusive test database.
+Customers poll detail about every 10 seconds until terminal; staff poll the complete active list about every 10 seconds. See [order fulfilment](docs/order-fulfilment.md) for behavior and [the completed coverage matrix](docs/testing-coverage.md) for named tests against DESIGN §§8/10. Focused test coverage resumes for these tasks, including previously deferred core domain cases. The full suite has 84 passing tests, with real PostgreSQL, real JWT login, all 147 pure transition/role combinations, snapshot/permission/token/payment regressions and deterministic races on independent committed connections. Run the verification commands above; committed suites must run serially against the exclusive test database.
 
 
 ## Container runtime
@@ -236,3 +236,17 @@ Task 021 adds a non-root multi-stage application image with locked production de
 Task 022 makes nginx the sole public entry point on 80/443, with mounted certificates, HTTPS redirects, trusted forwarding/request-ID boundaries, 64 KiB body limits, buffering/timeouts and JSON gzip. Login allows 5 requests/minute with burst 10; POST /orders allows 10/minute. Both return deliberate 429s, while GET polling and status changes remain unrestricted by those limiters. The local TLS override publishes only loopback 8080/8443.
 
 The [operations runbook](docs/deployment-operations.md) covers certificate/secret provisioning, migration reruns and expand-then-contract releases, rollback limits, the 30-connection runtime pool budget, nightly host-cron backups with verified SSH transfer/retention, and restore into a separate database. Run `python3 scripts/proxy_smoke.py --image takeaway-app:local` after building the image to verify TLS, proxy limits, actual backup transfer and snapshot/history restore in disposable resources. Production hostnames, credentials, certificates, backup destination and host cron remain operator configuration.
+
+
+## CI and release acceptance
+
+Use [the CI guide](docs/ci.md) for locked local/Actions commands and focused suites. The [release checklist and handoff](docs/release-handoff.md) provides an empty-deployment HTTPS acceptance flow, requirement-to-test map, operator inputs and deferred scope. After the documented test database setup:
+
+```sh
+sh scripts/ci.sh
+uv run --locked python scripts/release_smoke.py --image takeaway-app:ci
+uv run --locked python scripts/runtime_smoke.py --image takeaway-app:ci
+uv run --locked python scripts/proxy_smoke.py --image takeaway-app:ci
+```
+
+The smoke scripts create and remove their own isolated Compose projects. Read [configuration prerequisites](docs/release-handoff.md#reproduce-from-an-empty-deployment) first. For API clients, use the [account/menu/order request examples](docs/api-contract.md) and [fulfilment guide](docs/order-fulfilment.md); for production releases, use [migration, TLS and backup/restore operations](docs/deployment-operations.md).
