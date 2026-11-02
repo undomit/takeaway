@@ -54,6 +54,17 @@ async def safe_validation_error_handler(request: Request, exc: RequestValidation
     return await request_validation_exception_handler(request, RequestValidationError(errors))
 
 
+async def unexpected_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    # ServerErrorMiddleware runs outside installed request middleware. Preserve
+    # correlation on its response without disclosing exception/SQL details.
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error", "code": "internal_error"},
+        headers={"X-Request-ID": request.state.request_id},
+    )
+
+
 def register_exception_handlers(application: FastAPI) -> None:
+    application.add_exception_handler(Exception, unexpected_error_handler)
     application.add_exception_handler(DomainError, domain_error_handler)
     application.add_exception_handler(RequestValidationError, safe_validation_error_handler)

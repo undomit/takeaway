@@ -20,6 +20,54 @@ services:
       timeout: 3s
       retries: 30
     restart: unless-stopped
+    networks: [database]
+
+  migrate:
+    image: ${APP_IMAGE:-takeaway-app:local}
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      MIGRATION_DATABASE_URL: postgresql+psycopg://takeaway_owner:${DB_MIGRATION_PASSWORD:-}@db:5432/takeaway
+      MIGRATION_RUNTIME_ROLE: takeaway_runtime
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    restart: "no"
+    networks: [database]
+
+  app:
+    image: ${APP_IMAGE:-takeaway-app:local}
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://takeaway_runtime:${DB_RUNTIME_PASSWORD:-}@db:5432/takeaway
+      JWT_SECRET: ${JWT_SECRET:-}
+      PLATFORM_CURRENCY: ${PLATFORM_CURRENCY:-EUR}
+      PAYMENT_GATEWAY: mock
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    stop_grace_period: 30s
+    networks: [database, proxy]
+
+  nginx:
+    image: nginx:stable
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [edge, proxy]
+
+networks:
+  database:
+    internal: true
+  proxy:
+    internal: true
+  edge:
 
 volumes:
   postgres_data:

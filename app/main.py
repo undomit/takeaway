@@ -9,6 +9,7 @@ from app import models  # noqa: F401 - register model metadata at startup
 from app.api import create_api_router
 from app.core.config import Settings, get_settings
 from app.core.db import Database
+from app.core.request_logging import RequestLoggingMiddleware, configure_request_logging
 from app.exception_handlers import register_exception_handlers
 from app.health import router as health_router
 
@@ -16,6 +17,7 @@ from app.health import router as health_router
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> AsyncIterator[None]:
     # Validate before serving requests; importing the app never needs secrets or a DB.
+    configure_request_logging()
     settings_provider = application.dependency_overrides.get(get_settings, get_settings)
     application.state.settings = settings_provider()
     database = Database(application.state.settings)
@@ -31,6 +33,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     if settings is not None:
         application.dependency_overrides[get_settings] = lambda: settings
     register_exception_handlers(application)
+    application.add_middleware(RequestLoggingMiddleware)
     application.include_router(health_router)
     application.include_router(create_api_router())
     return application
