@@ -8,7 +8,7 @@ Read [DESIGN.md](../DESIGN.md), [GLOSSARY.MD](../GLOSSARY.MD), and all three [AD
 
 The numbered order is a valid implementation sequence. A task is self-contained once its listed prerequisites are complete: it includes its necessary implementation, migrations, documentation and focused tests. It does not require a later task to demonstrate its stated acceptance criteria. Dependencies express technical prerequisites; no parallel agent execution is requested.
 
-Task 001 is complete: [the API contract](../docs/api-contract.md) resolves API details omitted from the design's endpoint table before implementation. Task 002 is complete: the [application foundation](../README.md) provides settings, router composition, error mapping and tests. Tasks 003–010 establish persistence and a usable account/restaurant/menu backend. Tasks 011–016 deliver validated atomic checkout. Tasks 017–020 complete order fulfilment and cross-feature verification. Tasks 021–024 deliver the operational deployment and release verification. Pure domain tasks 011 and 015 can be implemented earlier after their listed prerequisites.
+Task 001 is complete: [the API contract](../docs/api-contract.md) resolves API details omitted from the design's endpoint table before implementation. Task 002 is complete: the [application foundation](../README.md) provides settings, router composition, error mapping and tests. Task 003 is complete: PostgreSQL, migrations, readiness and isolated integration fixtures are available. Tasks 004–010 establish account/restaurant/menu behaviour. Tasks 011–016 deliver validated atomic checkout. Tasks 017–020 complete order fulfilment and cross-feature verification. Tasks 021–024 deliver the operational deployment and release verification. Pure domain tasks 011 and 015 can be implemented earlier after their listed prerequisites.
 
 ## Clarifications and planning decisions
 
@@ -25,7 +25,7 @@ No unresolved product question blocks this plan. The completed [API contract](..
 
 - Use domain terms from the glossary and preserve ADR 0001 (one-restaurant staff/admin separation), ADR 0002 (polling and sync persistence), and ADR 0003 (integer minor units, one configured currency, order currency snapshot).
 - Implement router/service/repository boundaries. Use def endpoints with synchronous database work; no repositories commit, no services know HTTP, no cross-module repository/table access in use cases. Register every schema change in Alembic.
-- Each feature task includes focused unit/API/PostgreSQL tests where its behaviour requires them. Integration tests use real JWT login and PostgreSQL, savepoint rollback and cleared dependency overrides. Concurrency tests use distinct committed connections and privileged isolated cleanup.
+- Write fewer tests, concentrating on core functionality and scenarios that affect user flows. Prefer a small number of meaningful end-to-end cases over tests that mirror implementation details. Each feature task includes focused unit/API/PostgreSQL tests where its behaviour requires them. Integration tests use real JWT login and PostgreSQL, savepoint rollback and cleared dependency overrides. Concurrency tests use distinct committed connections and privileged isolated cleanup.
 - Keep existing tests passing. Verify each migration against its predecessor and run alembic check. Tests of append-only permissions use the runtime role, never the migration owner.
 - Do not introduce real payments/refunds, extra services, a frontend or future-scale infrastructure. Do not hard-delete domain records. All money stays integer minor units, snapshots stay immutable and timestamps come from PostgreSQL in UTC.
 - At the end of each task, commit its verified changes on a task branch and create a pull request. Include scope and validation evidence in the PR description and return its link. Merge only when requested.
@@ -37,7 +37,7 @@ No unresolved product question blocks this plan. The completed [API contract](..
 | --- | --- | --- |
 | [001](001-contract-and-decisions.md) | Complete the implementation contract — complete | None |
 | [002](002-application-foundation.md) | Create the application foundation — complete | 001 |
-| [003](003-postgres-and-test-harness.md) | Add PostgreSQL, migrations and isolated test fixtures | 002 |
+| [003](003-postgres-and-test-harness.md) | Add PostgreSQL, migrations and isolated test fixtures — complete | 002 |
 | [004](004-restaurant-and-customer-storage.md) | Persist restaurants and account identities | 003 |
 | [005](005-authentication-and-admin-bootstrap.md) | Implement registration, login and admin bootstrap | 004 |
 | [006](006-profile-and-credential-management.md) | Implement profiles, password change and token revocation | 005 |

@@ -6,6 +6,7 @@ from app.core.config import Settings, get_settings
 
 def test_settings_load_environment_and_cache(monkeypatch):
     secret = "test-only-secret-that-is-not-for-production"
+    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://unused:unused@127.0.0.1:1/unused")
     monkeypatch.setenv("JWT_SECRET", secret)
     monkeypatch.setenv("PLATFORM_CURRENCY", "EUR")
 
@@ -23,6 +24,7 @@ def test_settings_load_environment_and_cache(monkeypatch):
 
 def test_dotenv_and_environment_precedence(monkeypatch, tmp_path):
     (tmp_path / ".env").write_text(
+        "DATABASE_URL=postgresql+psycopg://unused:unused@127.0.0.1:1/unused\n"
         "JWT_SECRET=test-only-secret-that-is-not-for-production\n"
         "PLATFORM_CURRENCY=EUR\nUNRELATED_DEPLOYMENT_VALUE=ignored\n",
         encoding="utf-8",
@@ -35,7 +37,12 @@ def test_dotenv_and_environment_precedence(monkeypatch, tmp_path):
 @pytest.mark.parametrize("currency", ["", "eur", "EU", "EURO", "EU1", " EUR", "EUR\n"])
 def test_currency_must_be_three_uppercase_letters(settings, currency):
     with pytest.raises(ValidationError):
-        Settings(_env_file=None, jwt_secret=settings.jwt_secret, platform_currency=currency)
+        Settings(
+            _env_file=None,
+            database_url=settings.database_url,
+            jwt_secret=settings.jwt_secret,
+            platform_currency=currency,
+        )
 
 
 @pytest.mark.parametrize(
@@ -62,6 +69,7 @@ def test_required_settings_have_no_insecure_defaults():
     with pytest.raises(ValidationError) as caught:
         Settings(_env_file=None)
     assert {error["loc"] for error in caught.value.errors()} == {
+        ("database_url",),
         ("jwt_secret",),
         ("platform_currency",),
     }

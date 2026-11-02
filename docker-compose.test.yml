@@ -1,0 +1,19 @@
+# Run with project name takeaway-test; never combine with the local override.
+# These disposable test-only credentials must never be used in deployment.
+services:
+  db:
+    environment:
+      POSTGRES_USER: takeaway_test_bootstrap
+      POSTGRES_PASSWORD: test-only-bootstrap-password
+      POSTGRES_DB: takeaway_test
+      MIGRATION_DB_USER: takeaway_test_owner
+      MIGRATION_DB_PASSWORD: test-only-owner-password
+      RUNTIME_DB_USER: takeaway_test_runtime
+      RUNTIME_DB_PASSWORD: test-only-runtime-password
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:55432:5432"
+
+volumes:
+  postgres_test_data:

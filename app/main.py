@@ -7,6 +7,7 @@ from fastapi import FastAPI
 
 from app.api import create_api_router
 from app.core.config import Settings, get_settings
+from app.core.db import Database
 from app.exception_handlers import register_exception_handlers
 from app.health import router as health_router
 
@@ -16,7 +17,12 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
     # Validate before serving requests; importing the app never needs secrets or a DB.
     settings_provider = application.dependency_overrides.get(get_settings, get_settings)
     application.state.settings = settings_provider()
-    yield
+    database = Database(application.state.settings)
+    application.state.database = database
+    try:
+        yield
+    finally:
+        database.dispose()
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:

@@ -19,7 +19,6 @@ def test_healthz_is_unprefixed_and_does_not_need_a_database(application):
         assert response.status_code == 200
         assert response.json() == {"status": "ok"}
         assert client.get("/api/v1/healthz").status_code == 404
-        assert client.get("/readyz").status_code == 404
 
 
 def test_startup_rejects_missing_configuration():
@@ -38,6 +37,7 @@ def test_independent_instances_and_injected_settings(settings):
     first = create_app(settings)
     second_settings = Settings(
         _env_file=None,
+        database_url=settings.database_url,
         jwt_secret="another-test-secret-that-is-not-for-production",
         platform_currency="JPY",
     )
