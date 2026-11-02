@@ -3,6 +3,7 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core.address import AddressIn
 from app.errors import Forbidden, InvalidCredentials, NotAuthenticated, NotFound
 from app.restaurants import service as restaurants
 from app.security import dummy_password_hash, hash_password, verify_password
@@ -24,6 +25,23 @@ def get_by_id(session: Session, user_id: int) -> User | None:
 
 def get_by_email(session: Session, email: str) -> User | None:
     return repository.get_by_email(session, email)
+
+
+def get_saved_address(session: Session, user_id: int) -> AddressIn | None:
+    """Copy a customer's complete saved address without locks or commits."""
+    user = get_by_id(session, user_id)
+    if user is None:
+        raise NotFound()
+    if user.role != Role.CUSTOMER:
+        raise Forbidden()
+    if user.address_line1 is None:
+        return None
+    return AddressIn(
+        address_line1=user.address_line1,
+        address_line2=user.address_line2,
+        postcode=user.postcode,
+        phone=user.phone,
+    )
 
 
 def _create_account(
