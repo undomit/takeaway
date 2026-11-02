@@ -10,12 +10,14 @@ from pydantic import (
     ConfigDict,
     Field,
     SecretStr,
+    StrictBool,
     StringConstraints,
     field_serializer,
     field_validator,
     model_validator,
 )
 
+from app.core.schemas import JsonId
 from app.users.models import Role, User
 
 
@@ -45,6 +47,22 @@ class AccountCreateIn(BaseModel):
     email: Email
     full_name: FullName
     password: NewPassword
+
+
+class StaffCreateIn(AccountCreateIn):
+    restaurant_id: JsonId
+
+
+class AccountDeactivateIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    is_active: StrictBool
+
+    @field_validator("is_active")
+    @classmethod
+    def require_false(cls, value: bool) -> bool:
+        if value:
+            raise ValueError("Only deactivation is supported")
+        return value
 
 
 class AddressIn(BaseModel):

@@ -1,17 +1,44 @@
-"""Authenticated profile and credential management."""
+"""Admin onboarding/deactivation and authenticated profile/credential management."""
 
 from typing import Annotated
 
 from fastapi import APIRouter, Query, Response
 
 from app.auth.dependencies import CurrentUser, require_role
-from app.auth.schemas import NoQueryParameters
 from app.core.db import SessionDep
+from app.core.schemas import NoQueryParameters, PositiveId
 from app.users import service
 from app.users.models import Role, User
-from app.users.schemas import AccountOut, ChangePasswordIn, ProfileUpdateIn
+from app.users.schemas import (
+    AccountDeactivateIn,
+    AccountOut,
+    ChangePasswordIn,
+    ProfileUpdateIn,
+    StaffCreateIn,
+)
 
 router = APIRouter(prefix="", tags=["users"])
+
+
+@router.post("/users", response_model=AccountOut, status_code=201)
+def create_staff(
+    account: StaffCreateIn,
+    _admin: Annotated[User, require_role(Role.ADMIN)],
+    session: SessionDep,
+    _query: Annotated[NoQueryParameters, Query()],
+) -> AccountOut:
+    return AccountOut.from_user(service.create_staff(session, account))
+
+
+@router.patch("/users/{uid}", response_model=AccountOut)
+def deactivate_user(
+    uid: PositiveId,
+    data: AccountDeactivateIn,
+    _admin: Annotated[User, require_role(Role.ADMIN)],
+    session: SessionDep,
+    _query: Annotated[NoQueryParameters, Query()],
+) -> AccountOut:
+    return AccountOut.from_user(service.deactivate_user(session, uid))
 
 
 @router.get("/me", response_model=AccountOut)
