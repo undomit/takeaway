@@ -7,10 +7,14 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    StrictBool,
     StringConstraints,
     field_serializer,
+    field_validator,
     model_validator,
 )
+
+from app.restaurants.pagination import RestaurantCursor
 
 Name = Annotated[
     str, StringConstraints(strict=True, strip_whitespace=True, min_length=1, max_length=200)
@@ -22,6 +26,24 @@ Slug = Annotated[
     ),
 ]
 DeliveryFee = Annotated[int, Field(strict=True, ge=0, le=9007199254740991)]
+
+
+class RestaurantListQuery(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    limit: Annotated[int, Field(ge=1, le=100)] = 50
+    cursor: str | None = None
+
+    @field_validator("cursor")
+    @classmethod
+    def validate_cursor(cls, value: str | None) -> str | None:
+        if value is not None:
+            RestaurantCursor.decode(value)
+        return value
+
+
+class AcceptingOrdersIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    is_accepting_orders: StrictBool
 
 
 class RestaurantCreateIn(BaseModel):
@@ -58,3 +80,8 @@ class RestaurantOut(BaseModel):
     @field_serializer("created_at", "updated_at")
     def serialize_timestamp(self, value: datetime) -> str:
         return value.astimezone(UTC).isoformat(timespec="microseconds").replace("+00:00", "Z")
+
+
+class RestaurantPage(BaseModel):
+    items: list[RestaurantOut]
+    next_cursor: str | None
