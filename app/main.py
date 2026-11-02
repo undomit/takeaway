@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app import models  # noqa: F401 - register model metadata at startup
 from app.api import create_api_router
 from app.core.config import Settings, get_settings
 from app.core.db import Database

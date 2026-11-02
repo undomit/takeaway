@@ -39,6 +39,9 @@ def validate_database_url(secret: SecretStr) -> SecretStr:
 
 
 class MigrationSettings(EnvironmentSettings):
+    migration_runtime_role: str = Field(
+        default="takeaway_runtime", pattern=r"^[a-z_][a-z0-9_]{0,62}$"
+    )
     migration_database_url: SecretStr
     _validate_url = field_validator("migration_database_url")(validate_database_url)
 
