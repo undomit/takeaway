@@ -8,7 +8,7 @@ Read [DESIGN.md](../DESIGN.md), [GLOSSARY.MD](../GLOSSARY.MD), and all three [AD
 
 The numbered order is a valid implementation sequence. A task is self-contained once its listed prerequisites are complete: it includes its necessary implementation, migrations, documentation and focused tests. It does not require a later task to demonstrate its stated acceptance criteria. Dependencies express technical prerequisites; no parallel agent execution is requested.
 
-Task 001 resolves API details omitted from the design's endpoint table before implementation. Tasks 002–010 establish a usable account/restaurant/menu backend. Tasks 011–016 deliver validated atomic checkout. Tasks 017–020 complete order fulfilment and cross-feature verification. Tasks 021–024 deliver the operational deployment and release verification. Pure domain tasks 011 and 015 can be implemented earlier after their listed prerequisites.
+Task 001 is complete: [the API contract](../docs/api-contract.md) resolves API details omitted from the design's endpoint table before implementation. Tasks 002–010 establish a usable account/restaurant/menu backend. Tasks 011–016 deliver validated atomic checkout. Tasks 017–020 complete order fulfilment and cross-feature verification. Tasks 021–024 deliver the operational deployment and release verification. Pure domain tasks 011 and 015 can be implemented earlier after their listed prerequisites.
 
 ## Clarifications and planning decisions
 
@@ -19,7 +19,7 @@ Task 001 resolves API details omitted from the design's endpoint table before im
 - **Transaction ownership:** read-only service calls across features share a session and never commit. The outer write use case owns its one commit. This reconciles service-only module access with atomic order placement.
 - **Runtime privileges:** a schema-owning connection cannot demonstrate append-only history. Separate migration-owner and runtime credentials are part of the plan from the database fixture onward; history protection is verified using runtime credentials.
 
-No unresolved product question blocks this plan. The contract task makes the listed routine defaults explicit before coding. Hostnames, TLS certificates, deployment secrets and the off-host backup destination are operator inputs required for a production deployment, not decisions needed to write or test the backend locally.
+No unresolved product question blocks this plan. The completed [API contract](../docs/api-contract.md) makes the listed routine defaults explicit before coding. Hostnames, TLS certificates, deployment secrets and the off-host backup destination are operator inputs required for a production deployment, not decisions needed to write or test the backend locally.
 
 ## Shared completion rules
 
@@ -34,7 +34,7 @@ No unresolved product question blocks this plan. The contract task makes the lis
 
 | Task | Outcome | Prerequisites |
 | --- | --- | --- |
-| [001](001-contract-and-decisions.md) | Complete the implementation contract | None |
+| [001](001-contract-and-decisions.md) | Complete the implementation contract — complete | None |
 | [002](002-application-foundation.md) | Create the application foundation | 001 |
 | [003](003-postgres-and-test-harness.md) | Add PostgreSQL, migrations and isolated test fixtures | 002 |
 | [004](004-restaurant-and-customer-storage.md) | Persist restaurants and account identities | 003 |

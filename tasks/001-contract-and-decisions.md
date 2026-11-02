@@ -1,6 +1,6 @@
 # 001 — Complete the implementation contract
 
-Status: planned
+Status: complete
 
 Depends on: None
 
@@ -27,3 +27,38 @@ Review a route/permission matrix against every §5/§8 operation, including writ
 ## Completion boundary
 
 Complete this scope and its focused verification in one reviewable change. Keep preceding functionality passing; do not leave required tests or migration changes to a later task. Follow the shared completion rules in [README](README.md).
+
+## Completion evidence — 2026-11-02
+
+Implemented [docs/api-contract.md](../docs/api-contract.md): 27 route/view rows with role/scope rules, named response shapes, request/response examples, validation and canonical hashing, stable creation receipts, cursor rules, status changes, errors, explicit additions and requirement coverage.
+
+Reviewed the route matrix against DESIGN §§5/8 and all three ADRs. Walked through replay after status/profile changes, all-role password revocation, address copying, role/scope/transition error precedence and concurrent checkout/status-change outcomes. These are documentation acceptance checks, not claims that application endpoints or API tests already exist.
+
+Verification passed: `git diff --check`; Python standard-library checks parsed all 11 JSON examples, verified 27 unique route/view rows and local links/table structure, and checked receipt arithmetic, canonical JSON and the half-up rounding example. Reproduce the core example checks from the repository root:
+
+```sh
+python3 - <<'PYTHON'
+import json, re
+from pathlib import Path
+p = Path("docs/api-contract.md")
+text = p.read_text()
+blocks = re.findall(r"```json\n(.*?)\n```", text, re.S)
+values = [json.loads(block) for block in blocks]
+assert len(values) == 11
+for target in re.findall(r"\]\(([^)]+)\)", text):
+    assert (p.parent / target).exists(), target
+for table in re.findall(r"(?:^\|.*\n)+", text, re.M):
+    assert len({len(row.split("|")) for row in table.strip().splitlines()}) == 1
+matrix = text.split("## Route and permission matrix")[1].split("## Account operations")[0]
+rows = [row for row in matrix.splitlines() if re.match(r"\| (GET|POST|PATCH|PUT) \|", row)]
+assert len(rows) == len({tuple(row.split("|")[1:3]) for row in rows}) == 27
+receipt = next(v for v in values if isinstance(v, dict) and "subtotal_minor" in v)
+assert receipt["total_minor"] == receipt["subtotal_minor"] + receipt["delivery_fee_minor"]
+assert receipt["subtotal_minor"] == sum(line["line_total_minor"] for line in receipt["lines"])
+assert all(line["line_total_minor"] == line["unit_price_minor"] * line["quantity"] for line in receipt["lines"])
+canonical = next(b for b in blocks if b.startswith('{"delivery_address":null'))
+assert canonical == json.dumps(json.loads(canonical), sort_keys=True, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
+assert (1250 * (10000 - 1500) + 5000) // 10000 == 1063
+print("Contract example checks passed")
+PYTHON
+```
