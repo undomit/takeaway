@@ -15,6 +15,17 @@ def get_by_email(session: Session, email: str) -> User | None:
     return session.scalar(select(User).where(func.lower(User.email) == func.lower(email.strip())))
 
 
+def get_for_update(session: Session, user_id: int) -> User | None:
+    # Authentication may already have loaded this identity. Refresh it after
+    # acquiring the lock so a concurrent credential change cannot be overwritten.
+    return session.scalar(
+        select(User)
+        .where(User.id == user_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+
+
 def add(session: Session, user: User) -> User:
     session.add(user)
     session.flush()

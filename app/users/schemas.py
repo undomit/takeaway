@@ -12,6 +12,8 @@ from pydantic import (
     SecretStr,
     StringConstraints,
     field_serializer,
+    field_validator,
+    model_validator,
 )
 
 from app.users.models import Role, User
@@ -43,6 +45,45 @@ class AccountCreateIn(BaseModel):
     email: Email
     full_name: FullName
     password: NewPassword
+
+
+class AddressIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    address_line1: Annotated[
+        str, StringConstraints(strict=True, strip_whitespace=True, min_length=1, max_length=200)
+    ]
+    address_line2: (
+        Annotated[str, StringConstraints(strict=True, strip_whitespace=True, max_length=200)] | None
+    ) = None
+    postcode: Annotated[
+        str, StringConstraints(strict=True, strip_whitespace=True, min_length=1, max_length=32)
+    ]
+    phone: Annotated[
+        str, StringConstraints(strict=True, strip_whitespace=True, min_length=1, max_length=32)
+    ]
+
+    @field_validator("address_line2")
+    @classmethod
+    def blank_line_to_none(cls, value: str | None) -> str | None:
+        return value or None
+
+
+class ProfileUpdateIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    full_name: FullName = Field(default=None)  # Omission is valid; explicit null is not.
+    saved_address: AddressIn | None = None
+
+    @model_validator(mode="after")
+    def require_changes(self) -> "ProfileUpdateIn":
+        if not self.model_fields_set:
+            raise ValueError("At least one profile field is required")
+        return self
+
+
+class ChangePasswordIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    current_password: Annotated[SecretStr, Field(min_length=1, max_length=128)]
+    new_password: NewPassword
 
 
 class SavedAddressOut(BaseModel):

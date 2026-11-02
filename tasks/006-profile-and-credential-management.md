@@ -1,6 +1,6 @@
 # 006 — Implement profiles, password change and token revocation
 
-Status: planned
+Status: complete (implementation; new tests deferred at the user's request)
 
 Depends on: [005](005-authentication-and-admin-bootstrap.md)
 
@@ -21,3 +21,20 @@ Test customer profile create/update/clear, all-role /me, staff/admin PATCH rejec
 ## Completion boundary
 
 Complete this scope and its focused verification in one reviewable change. Keep preceding functionality passing; do not leave required tests or migration changes to a later task. Follow the shared completion rules in [README](README.md).
+
+
+## Completion evidence — 2026-11-02
+
+Implemented GET /me for all roles and customer-only PATCH /me with trimmed names, complete saved-address replacement, explicit-null address clearing and atomic profile writes. Nonempty partial requests preserve omitted fields; null names, incomplete addresses and unknown body/query fields are rejected. Responses use the existing safe Account schema.
+
+Implemented all-role password change and logout-everywhere with empty 204 responses, one service-owned commit and rollback on failures. Password change verifies the current password, hashes the replacement and increments token_version together; incorrect current passwords return 401 invalid_credentials without mutation. Neither operation issues tokens. Account row locks refresh the authenticated identity and recheck activation/token_version after waiting, preventing concurrent credential writes from overwriting each other. Existing authentication rejects revoked tokens on subsequent requests. No schema changes or migrations were needed.
+
+The user's explicit instruction for this task overrides the planned new-test requirement: no test files were added or modified. Focused automated regression coverage is deferred to a later stage. Existing tests and an ephemeral API smoke check provide the verification for this change.
+
+Verification:
+
+- `.venv/bin/pytest -q -W error --tb=short`: **49 passed** on the isolated PostgreSQL test database; its fixtures also ran Alembic upgrade/check without schema drift. Initial attempts could not connect while sandbox access was restricted/the test container was stopped; rerunning after starting the dedicated test stack passed.
+- `.venv/bin/ruff check .`, `.venv/bin/ruff format --check .`, `.venv/bin/lint-imports` and `git diff --check`: passed; all three architecture contracts kept.
+- Ephemeral Python/TestClient API smoke against PostgreSQL (all data rolled back, no test file added): customer/staff/admin profile reads and write permissions, address replacement/clear and invalid-body rejection, unknown-query rejection, wrong-current-password safety, successful password change, old-password rejection, fresh login, and token rejection after password change/logout.
+
+See [README.md](../README.md#profiles-and-credential-management) for usage and transaction semantics.
