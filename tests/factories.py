@@ -36,3 +36,9 @@ def create_user(session: Session, *, email: str = "customer@example.test", **att
     }
     values.update(attributes)
     return repository.add(session, User(email=email, **values))
+
+
+def login_token(client, email: str, password: str) -> str:
+    response = client.post("/api/v1/auth/token", data={"username": email, "password": password})
+    assert response.status_code == 200, response.text
+    return response.json()["access_token"]
