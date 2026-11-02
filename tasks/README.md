@@ -23,7 +23,7 @@ No unresolved product question blocks this plan. The completed [API contract](..
 
 ## Shared completion rules
 
-Current user instruction: do not add tests at this stage; focused new coverage is deferred. Keep running the existing checks and record verification evidence for each implementation task. Create a PR after every completed task; merge only when requested.
+Current user instruction: feature-task tests remain deferred unless separately requested. After task 016, the user requested the successful-checkout test area; its saved/one-off address cases are documented in the main README. Other proposed test areas remain deferred. Keep running the existing checks and record verification evidence for each change. Create a PR after every completed task; merge only when requested.
 
 - Use domain terms from the glossary and preserve ADR 0001 (one-restaurant staff/admin separation), ADR 0002 (polling and sync persistence), and ADR 0003 (integer minor units, one configured currency, order currency snapshot).
 - Implement router/service/repository boundaries. Use def endpoints with synchronous database work; no repositories commit, no services know HTTP, no cross-module repository/table access in use cases. Register every schema change in Alembic.
