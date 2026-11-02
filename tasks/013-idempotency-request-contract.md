@@ -1,6 +1,6 @@
 # 013 — Implement order validation and canonical request hashing
 
-Status: planned
+Status: complete (new tests deferred at the user's request)
 
 Depends on: [006](006-profile-and-credential-management.md), [012](012-order-pricing.md)
 
@@ -21,3 +21,17 @@ Unit-test object-key reordering, nested address keys, different restaurant/quant
 ## Completion boundary
 
 Complete this scope and its focused verification in one reviewable change. Keep preceding functionality passing; do not leave required tests or migration changes to a later task. Follow the shared completion rules in [README](README.md).
+
+
+## Completion evidence — 2026-11-02
+
+Added strict placement input using shared quantity/ID/duplicate-line checks, optional complete address and whitespace-preserving notes. Extracted address validation into core with a compatible users.schemas export and frozen normalized addresses. Added canonical compact sorted UTF-8 JSON/SHA-256 helpers over submitted values only, with expanded optional defaults and preserved line-array order. Added pure exact-one UUID-v4 header parsing and an HTTP dependency with missing=400 and malformed/duplicate=standard 422 behavior.
+
+Added shared immutable snapshot values and separate CreationReceipt/OrderDetail response schemas. Receipt serialization reads only immutable fields and initial customer history and stays pending/paid after later state changes. Lines/history sort deterministically, timestamps use six-digit UTC format, and current detail derives refund_owed. No production order endpoint, migration or test file was added; POST /orders remains task 016.
+
+Verification:
+
+- `.venv/bin/python /tmp/takeaway_smoke_013.py`: passed exact documented canonical bytes/digest, key/nested-address order equivalence, default/null/blank treatment, changed restaurant/quantity/address/notes/line-order differences, Unicode preservation without extra normalization, rejected client fields, strict header parsing and frozen/stable receipt versus current-detail serialization. Pure helpers imported no database/HTTP layer. An ephemeral FastAPI header probe verified missing=400, duplicate/invalid=standard safe 422 and uppercase UUID normalization without a database/order endpoint.
+- `.venv/bin/python /tmp/takeaway_smoke_011.py` and `.venv/bin/python /tmp/takeaway_smoke_012.py`: passed again after integration of shared primitives.
+- `.venv/bin/pytest -q -W error --tb=short`: **49 passed**, including PostgreSQL migration upgrade/check with no drift.
+- `.venv/bin/ruff check .`, `.venv/bin/ruff format --check .`, `.venv/bin/lint-imports`, `git diff --check`: passed. New automated coverage remains deferred as requested.
