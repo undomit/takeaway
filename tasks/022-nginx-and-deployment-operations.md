@@ -1,6 +1,6 @@
 # 022 — Configure TLS, rate limits and operational procedures
 
-Status: planned
+Status: complete
 
 Depends on: [021](021-container-runtime-and-observability.md)
 
@@ -23,3 +23,11 @@ Run nginx -t and proxy smoke checks with local test certificates: HTTPS redirect
 ## Completion boundary
 
 Complete this scope and its focused verification in one reviewable change. Keep preceding functionality passing; do not leave required tests or migration changes to a later task. Follow the shared completion rules in [README](README.md).
+
+## Verification and operator handoff
+
+`python3 scripts/proxy_smoke.py --image takeaway-app:task021` passed all six stages using a generated trusted-local certificate and a randomly named disposable Compose project. Checks include nginx -t, HTTP→HTTPS redirect, forwarded HTTPS scheme/host/port, generated request ID correlation, gzip, 64 KiB rejection, actual login/create 429s with spoofed forwarded-IP headers, unaffected repeated polling/status changes and private app/db ports. The actual backup script transferred a custom pg_dump archive over verified SSH to a separate disposable container; failure retained old local backups and success applied retention. Restore into a new database preserved the paid order, price/contact/currency snapshots and ordered history. Live/existing restore targets were refused. Test containers, named volume and SSH image were removed.
+
+`sh -n scripts/backup.sh scripts/restore.sh` passed. `uv run --locked pytest -W error -q` — 84 passed. Ruff lint/format and all 3 import-linter contracts passed. Task 021's container lifecycle smoke remains passing against the final Compose graph.
+
+The [operations runbook](../docs/deployment-operations.md) records exact local/production startup, certificate renewal, explicit migration reruns, expand-then-contract deployment, rollback limits, pool budget, nightly host-cron backup/retention and isolated restore steps. Actual production DNS/certificates/secrets, off-host SSH identity/storage/retention and cron installation are operator inputs; no production deployment or host cron was changed. Proxy-generated errors intentionally retain nginx's response shape, as allowed by the API contract.

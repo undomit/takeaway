@@ -225,3 +225,9 @@ __marimo__/
 .import_linter_cache/
 !.env.test.example
 !.env.deploy.example
+
+# Local TLS material and database dumps are never source artifacts.
+.certs/
+*.dump
+backups/
+!.env.backup.example

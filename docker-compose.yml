@@ -56,6 +56,20 @@ services:
     image: nginx:stable
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ${TLS_CERT_DIR:-./.certs}:/etc/nginx/tls:ro
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:-localhost}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-https://localhost}
+      NGINX_ENVSUBST_FILTER: "^(PUBLIC_HOST|PUBLIC_ORIGIN)$$"
+    ports:
+      - "80:80"
+      - "443:443"
+    healthcheck:
+      test: [CMD, nginx, -t, -q]
+      interval: 10s
+      timeout: 3s
+      retries: 3
     depends_on:
       app:
         condition: service_healthy
