@@ -21,3 +21,22 @@ class ReasonRequired(RuleViolation):
 class IdempotencyKeyRequired(BadRequest):
     code = "idempotency_key_required"
     detail = "Idempotency-Key header is required"
+
+
+class DeliveryAddressRequired(RuleViolation):
+    code = "delivery_address_required"
+    detail = "Supply a delivery address or save one on your profile"
+
+
+class IdempotencyKeyReused(RuleViolation):
+    code = "idempotency_key_reused"
+    detail = "Idempotency-Key was already used for a different order request"
+
+
+class InvalidOrderPricing(RuleViolation):
+    code = "invalid_order_pricing"
+    detail = "Order amounts exceed the supported bounds"
+
+    def __init__(self, errors: list[dict]) -> None:
+        super().__init__()
+        self.errors = errors
