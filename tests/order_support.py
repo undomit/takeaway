@@ -116,3 +116,11 @@ def place(client, data, *, customer="customer_a", restaurant=0, key=None, **extr
     } | extra
     headers = data.headers[customer] | {"Idempotency-Key": str(key or uuid4())}
     return client.post("/api/v1/orders", headers=headers, json=body)
+
+
+def error(response, status, code=None):
+    assert response.status_code == status, response.text
+    if code:
+        assert response.json()["code"] == code
+    else:
+        assert isinstance(response.json()["detail"], list)
