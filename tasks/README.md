@@ -8,7 +8,7 @@ Read [DESIGN.md](../DESIGN.md), [GLOSSARY.MD](../GLOSSARY.MD), and all three [AD
 
 The numbered order is a valid implementation sequence. A task is self-contained once its listed prerequisites are complete: it includes its necessary implementation, migrations, documentation and focused tests. It does not require a later task to demonstrate its stated acceptance criteria. Dependencies express technical prerequisites; no parallel agent execution is requested.
 
-Task 001 is complete: [the API contract](../docs/api-contract.md) resolves API details omitted from the design's endpoint table before implementation. Task 002 is complete: the [application foundation](../README.md) provides settings, router composition, error mapping and tests. Task 003 is complete: PostgreSQL, migrations, readiness and isolated integration fixtures are available. Task 004 is complete: restaurant/account models and their database constraints are available. Task 005 is complete: customer registration, JWT login/authentication and admin bootstrap are available. Task 006 is complete: profile management, password changes and logout/token revocation are available (new tests deferred at the user's request). Tasks 007–010 establish restaurant/menu management behaviour. Tasks 011–016 deliver validated atomic checkout. Tasks 017–020 complete order fulfilment and cross-feature verification. Tasks 021–024 deliver the operational deployment and release verification. Pure domain tasks 011 and 015 can be implemented earlier after their listed prerequisites.
+Task 001 is complete: [the API contract](../docs/api-contract.md) resolves API details omitted from the design's endpoint table before implementation. Task 002 is complete: the [application foundation](../README.md) provides settings, router composition, error mapping and tests. Task 003 is complete: PostgreSQL, migrations, readiness and isolated integration fixtures are available. Task 004 is complete: restaurant/account models and their database constraints are available. Task 005 is complete: customer registration, JWT login/authentication and admin bootstrap are available. Task 006 is complete: profile management, password changes and logout/token revocation are available (new tests deferred at the user's request). Task 007 is complete: admin restaurant/staff onboarding and account deactivation are available (new tests deferred at the user's request). Tasks 008–010 establish restaurant browsing and menu management behaviour. Tasks 011–016 deliver validated atomic checkout. Tasks 017–020 complete order fulfilment and cross-feature verification. Tasks 021–024 deliver the operational deployment and release verification. Pure domain tasks 011 and 015 can be implemented earlier after their listed prerequisites.
 
 ## Clarifications and planning decisions
 
@@ -22,6 +22,8 @@ Task 001 is complete: [the API contract](../docs/api-contract.md) resolves API d
 No unresolved product question blocks this plan. The completed [API contract](../docs/api-contract.md) makes the listed routine defaults explicit before coding. Hostnames, TLS certificates, deployment secrets and the off-host backup destination are operator inputs required for a production deployment, not decisions needed to write or test the backend locally.
 
 ## Shared completion rules
+
+Current user instruction: do not add tests at this stage; focused new coverage is deferred. Keep running the existing checks and record verification evidence for each implementation task. Create a PR after every completed task; merge only when requested.
 
 - Use domain terms from the glossary and preserve ADR 0001 (one-restaurant staff/admin separation), ADR 0002 (polling and sync persistence), and ADR 0003 (integer minor units, one configured currency, order currency snapshot).
 - Implement router/service/repository boundaries. Use def endpoints with synchronous database work; no repositories commit, no services know HTTP, no cross-module repository/table access in use cases. Register every schema change in Alembic.
@@ -41,7 +43,7 @@ No unresolved product question blocks this plan. The completed [API contract](..
 | [004](004-restaurant-and-customer-storage.md) | Persist restaurants and account identities — complete | 003 |
 | [005](005-authentication-and-admin-bootstrap.md) | Implement registration, login and admin bootstrap — complete | 004 |
 | [006](006-profile-and-credential-management.md) | Implement profiles, password change and token revocation — complete | 005 |
-| [007](007-admin-onboarding.md) | Implement restaurant and staff onboarding | 005 |
+| [007](007-admin-onboarding.md) | Implement restaurant and staff onboarding — complete | 005 |
 | [008](008-restaurant-browsing-and-switch.md) | Expose restaurant browsing and accepting-orders control | 007 |
 | [009](009-menu-categories-and-items.md) | Implement menu browsing and editing | 008 |
 | [010](010-sale-prices.md) | Implement fixed and percentage sale prices | 009 |

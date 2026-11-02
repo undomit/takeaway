@@ -3,12 +3,19 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.errors import Forbidden, InvalidCredentials, NotAuthenticated
+from app.errors import Forbidden, InvalidCredentials, NotAuthenticated, NotFound
+from app.restaurants import service as restaurants
 from app.security import dummy_password_hash, hash_password, verify_password
 from app.users import repository
 from app.users.errors import EmailInUse
 from app.users.models import Role, User
-from app.users.schemas import AccountCreateIn, ChangePasswordIn, ProfileUpdateIn, normalize_email
+from app.users.schemas import (
+    AccountCreateIn,
+    ChangePasswordIn,
+    ProfileUpdateIn,
+    StaffCreateIn,
+    normalize_email,
+)
 
 
 def get_by_id(session: Session, user_id: int) -> User | None:
@@ -19,12 +26,15 @@ def get_by_email(session: Session, email: str) -> User | None:
     return repository.get_by_email(session, email)
 
 
-def _create_account(session: Session, account: AccountCreateIn, role: Role) -> User:
+def _create_account(
+    session: Session, account: AccountCreateIn, role: Role, restaurant_id: int | None = None
+) -> User:
     user = User(
         email=account.email,
         full_name=account.full_name,
         password_hash=hash_password(account.password.get_secret_value()),
         role=role,
+        restaurant_id=restaurant_id,
     )
     try:
         repository.add(session, user)
@@ -37,6 +47,9 @@ def _create_account(session: Session, account: AccountCreateIn, role: Role) -> U
         ):
             raise EmailInUse() from None
         raise
+    except Exception:
+        session.rollback()
+        raise
     return user
 
 
@@ -47,6 +60,26 @@ def register_customer(session: Session, account: AccountCreateIn) -> User:
 def create_admin(session: Session, account: AccountCreateIn) -> User:
     """Local bootstrap use case only; never exposed through public registration."""
     return _create_account(session, account, Role.ADMIN)
+
+
+def create_staff(session: Session, account: StaffCreateIn) -> User:
+    restaurants.get_by_id(session, account.restaurant_id)
+    return _create_account(session, account, Role.STAFF, restaurant_id=account.restaurant_id)
+
+
+def deactivate_user(session: Session, user_id: int) -> User:
+    try:
+        user = repository.get_for_update(session, user_id)
+        if user is None:
+            raise NotFound()
+        if user.is_active:
+            user.is_active = False
+            user.token_version += 1
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    return user
 
 
 def authenticate(session: Session, email: str, password: str) -> User:

@@ -14,6 +14,15 @@ def get_by_slug(session: Session, slug: str) -> Restaurant | None:
     return session.scalar(select(Restaurant).where(Restaurant.slug == slug))
 
 
+def get_for_update(session: Session, restaurant_id: int) -> Restaurant | None:
+    return session.scalar(
+        select(Restaurant)
+        .where(Restaurant.id == restaurant_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+
+
 def add(session: Session, restaurant: Restaurant) -> Restaurant:
     session.add(restaurant)
     session.flush()

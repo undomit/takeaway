@@ -4,11 +4,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
+from app.core.schemas import NoQueryParameters as NoQueryParameters
 from app.users.schemas import AccountCreateIn
-
-
-class NoQueryParameters(BaseModel):
-    model_config = ConfigDict(extra="forbid")
 
 
 class RegisterIn(AccountCreateIn):
