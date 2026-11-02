@@ -4,7 +4,7 @@ Status: complete (new tests deferred at the user's request)
 
 Depends on: [007](007-admin-onboarding.md)
 
-Sources: DESIGN §§1 A7, 5, 7.11, 8; ADR 0001. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§1 A7, 5, 7.11, 8; ADR 0001. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

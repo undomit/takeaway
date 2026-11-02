@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: [019](019-concurrency-regressions.md), [020](020-snapshot-and-authorization-regressions.md)
 
-Sources: DESIGN §§2–3, 7.12, 9; ADR 0002. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§2–3, 7.12, 9; ADR 0002. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

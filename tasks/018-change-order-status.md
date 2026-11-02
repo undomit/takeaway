@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: [011](011-order-status-rules.md), [017](017-order-reads-and-polling.md)
 
-Sources: DESIGN §§5–6, 7.1, 7.5, 7.7–7.9, 8, 10. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§5–6, 7.1, 7.5, 7.7–7.9, 8, 10. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

@@ -4,7 +4,7 @@ Status: complete (new tests deferred at the user's request)
 
 Depends on: [009](009-menu-categories-and-items.md)
 
-Sources: DESIGN §§4, 7.4, 10; ADR 0003. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§4, 7.4, 10; ADR 0003. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

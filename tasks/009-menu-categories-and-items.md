@@ -4,7 +4,7 @@ Status: complete (new tests deferred at the user's request)
 
 Depends on: [008](008-restaurant-browsing-and-switch.md)
 
-Sources: DESIGN §§1 A6, 3–5, 7.9–7.10, 8; GLOSSARY.MD. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§1 A6, 3–5, 7.9–7.10, 8; GLOSSARY.MD. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

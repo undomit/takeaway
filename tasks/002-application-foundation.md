@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: [001](001-contract-and-decisions.md)
 
-Sources: DESIGN §§2–3, 5; Appendix B. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§2–3, 5; Appendix B. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

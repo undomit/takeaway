@@ -2,7 +2,7 @@
 
 Status: implemented and verified through task 024 (2026-11-02). Contract defined in task 001.
 
-This contract turns [DESIGN.md](../DESIGN.md) §§1, 4–8 into implementable HTTP behaviour using the terms in [GLOSSARY.MD](../GLOSSARY.MD). It preserves [ADR 0001](adr/0001-restaurant-scoped-staff-and-admin-role.md) (restaurant-scoped staff and separate admins), [ADR 0002](adr/0002-pooling-with-sync-sqlalchemy.md) (polling and synchronous persistence) and [ADR 0003](adr/0003-money-as-integer-minor-units.md) (integer money and a single configured currency).
+This contract turns [DESIGN.md](DESIGN.md) §§1, 4–8 into implementable HTTP behaviour using the terms in [GLOSSARY.MD](GLOSSARY.MD). It preserves [ADR 0001](adr/0001-restaurant-scoped-staff-and-admin-role.md) (restaurant-scoped staff and separate admins), [ADR 0002](adr/0002-pooling-with-sync-sqlalchemy.md) (polling and synchronous persistence) and [ADR 0003](adr/0003-money-as-integer-minor-units.md) (integer money and a single configured currency).
 
 The design remains the architectural source. The decisions at the end explicitly identify additions where it did not specify an API detail. The application, migrations and executable verification now implement this contract; the [release handoff](release-handoff.md) records acceptance evidence, including comparison with live OpenAPI.
 

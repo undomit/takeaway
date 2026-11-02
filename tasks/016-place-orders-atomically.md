@@ -4,7 +4,7 @@ Status: complete (new tests deferred at the user's request)
 
 Depends on: [008](008-restaurant-browsing-and-switch.md), [012](012-order-pricing.md), [013](013-idempotency-request-contract.md), [014](014-order-storage-and-history-permissions.md), [015](015-mock-payment-gateway.md)
 
-Sources: DESIGN §§1 A2–A5/A10, 5, 7.2–7.4, 7.10–7.11, 10; Appendix C. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§1 A2–A5/A10, 5, 7.2–7.4, 7.10–7.11, 10; Appendix C. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

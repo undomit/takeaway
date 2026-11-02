@@ -4,7 +4,7 @@ Status: complete (new tests deferred at the user's request)
 
 Depends on: [004](004-restaurant-and-customer-storage.md), [009](009-menu-categories-and-items.md), [011](011-order-status-rules.md), [013](013-idempotency-request-contract.md)
 
-Sources: DESIGN §§4, 7.2–7.3, 7.7, 9–10. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§4, 7.2–7.3, 7.7, 9–10. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

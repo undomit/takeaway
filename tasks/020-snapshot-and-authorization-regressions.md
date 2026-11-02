@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: [018](018-change-order-status.md)
 
-Sources: DESIGN §§7.2, 7.8–7.11, 8, 10; all ADRs. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§7.2, 7.8–7.11, 8, 10; all ADRs. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

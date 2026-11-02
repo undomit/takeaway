@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: [021](021-container-runtime-and-observability.md)
 
-Sources: DESIGN §9; §7.12; ADR 0002. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §9; §7.12; ADR 0002. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

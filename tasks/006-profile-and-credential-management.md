@@ -4,7 +4,7 @@ Status: complete (implementation; new tests deferred at the user's request)
 
 Depends on: [005](005-authentication-and-admin-bootstrap.md)
 
-Sources: DESIGN §§1 A10–A11, 5, 8, 10; planning clarification. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§1 A10–A11, 5, 8, 10; planning clarification. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

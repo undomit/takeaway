@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: [022](022-nginx-and-deployment-operations.md)
 
-Sources: DESIGN §§3, 7.12, 10; Appendix B. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§3, 7.12, 10; Appendix B. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

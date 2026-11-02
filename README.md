@@ -1,6 +1,25 @@
 # Takeaway backend
 
-A FastAPI modular monolith for a small restaurant ordering platform. The [design](DESIGN.md), [glossary](GLOSSARY.MD), [API contract](docs/api-contract.md) and [development tasks](tasks/README.md) define the release.
+A FastAPI modular monolith for a small restaurant ordering platform. The [design](docs/DESIGN.md), [glossary](docs/GLOSSARY.MD), [API contract](docs/api-contract.md) and [development tasks](tasks/README.md) define the release.
+
+## TLDR
+
+| I want to… | Read this |
+| --- | --- |
+| Run the backend on my computer | [Run locally](docs/run_locally.md) — prerequisites, setup, startup and shutdown |
+| Understand the backend and its scope | [Design](docs/DESIGN.md) |
+| Look up domain terms | [Glossary](docs/GLOSSARY.MD) |
+| Find endpoints, permissions and request examples | [API contract](docs/api-contract.md) |
+| Understand order statuses, polling and replay | [Order fulfilment](docs/order-fulfilment.md) |
+| Run checks or understand architecture enforcement | [CI and local checks](docs/ci.md) |
+| See what the tests cover | [Testing coverage](docs/testing-coverage.md) |
+| Understand the Docker runtime and logs | [Container runtime](docs/container-runtime.md) |
+| Deploy with HTTPS, run migrations or back up/restore | [Deployment and operations](docs/deployment-operations.md) |
+| Verify the release and prepare an operator handoff | [Release handoff](docs/release-handoff.md) |
+| Understand restaurant-scoped staff and admin roles | [ADR 0001](docs/adr/0001-restaurant-scoped-staff-and-admin-role.md) |
+| Understand polling and synchronous persistence | [ADR 0002](docs/adr/0002-pooling-with-sync-sqlalchemy.md) |
+| Understand integer money and currency snapshots | [ADR 0003](docs/adr/0003-money-as-integer-minor-units.md) |
+| Browse the 24 completed implementation tasks | [Task index](tasks/README.md) — links to every task and its verification evidence |
 
 ## Setup
 
