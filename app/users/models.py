@@ -1,7 +1,6 @@
 """Account identities and their restaurant/saved-address invariants."""
 
 from datetime import datetime
-from enum import StrEnum
 
 from sqlalchemy import (
     BigInteger,
@@ -20,12 +19,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import TypeDecorator
 
 from app.core.db import Base
-
-
-class Role(StrEnum):
-    CUSTOMER = "customer"
-    STAFF = "staff"
-    ADMIN = "admin"
+from app.users.roles import Role as Role
 
 
 class RoleType(TypeDecorator[Role]):
