@@ -218,3 +218,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local settings variants (keep the placeholder template tracked)
+.env.*
+!.env.example
+.import_linter_cache/
