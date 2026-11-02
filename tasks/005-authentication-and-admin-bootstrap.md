@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: [004](004-restaurant-and-customer-storage.md)
 
-Sources: DESIGN §§3, 5, 8; ADR 0001. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§3, 5, 8; ADR 0001. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

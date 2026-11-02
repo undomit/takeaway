@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: None
 
-Sources: DESIGN §§1, 4–8; GLOSSARY.MD; all ADRs. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§1, 4–8; GLOSSARY.MD; all ADRs. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

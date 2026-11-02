@@ -2,9 +2,9 @@
 
 **Scope:** a backend for about 10 restaurants and about 100 orders an hour at peak, in a single region.
 **Style:** a modular monolith built on FastAPI and PostgreSQL.
-**Companion documents:** `GLOSSARY.md` defines the domain terms, and `docs/adr/` records the three decisions that are hard to reverse.
+**Companion documents:** [GLOSSARY.MD](GLOSSARY.MD) defines the domain terms, and [architecture decisions](adr/) records the three decisions that are hard to reverse.
 
-Bold domain terms (order line, status change, ...) are used exactly as `GLOSSARY.md` defines them.
+Bold domain terms (order line, status change, ...) are used exactly as [GLOSSARY.MD](GLOSSARY.MD) defines them.
 
 ## 1. Assumptions and open questions
 

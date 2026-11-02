@@ -2,7 +2,7 @@
 
 This plan starts from the documentation-only project as inspected on 2026-11-02. No application code or existing test suite was present. Each numbered Markdown file is one implementation task; this index is not an implementation task.
 
-Read [DESIGN.md](../DESIGN.md), [GLOSSARY.MD](../GLOSSARY.MD), and all three [ADRs](../docs/adr/) before implementation. The glossary's actual filename is uppercase; use its exact path on case-sensitive systems. The existing source documents have not been edited by this planning work.
+Read [DESIGN.md](../docs/DESIGN.md), [GLOSSARY.MD](../docs/GLOSSARY.MD), and all three [ADRs](../docs/adr/) before implementation. The glossary's actual filename is uppercase; use its exact path on case-sensitive systems. The existing source documents have not been edited by this planning work.
 
 ## Execution
 

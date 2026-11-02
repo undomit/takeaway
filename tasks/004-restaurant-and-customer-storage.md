@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: [003](003-postgres-and-test-harness.md)
 
-Sources: DESIGN §4, §§7.4, 8; ADRs 0001, 0003. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §4, §§7.4, 8; ADRs 0001, 0003. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

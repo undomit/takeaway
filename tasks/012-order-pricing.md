@@ -4,7 +4,7 @@ Status: complete (new tests deferred at the user's request)
 
 Depends on: [010](010-sale-prices.md), [011](011-order-status-rules.md)
 
-Sources: DESIGN §§1 A4–A5, 4, 7.2, 7.4, 7.10, 10; ADR 0003. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§1 A4–A5, 4, 7.2, 7.4, 7.10, 10; ADR 0003. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

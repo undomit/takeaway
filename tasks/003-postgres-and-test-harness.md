@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: [002](002-application-foundation.md)
 
-Sources: DESIGN §§3–4, 9–10; ADR 0002. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§3–4, 9–10; ADR 0002. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 

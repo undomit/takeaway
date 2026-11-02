@@ -4,7 +4,7 @@ Status: complete
 
 Depends on: [016](016-place-orders-atomically.md)
 
-Sources: DESIGN §§4–5, 7.6, 7.8–7.9, 8; ADRs 0001–0002. See [design](../DESIGN.md), [glossary](../GLOSSARY.MD) and [ADRs](../docs/adr/).
+Sources: DESIGN §§4–5, 7.6, 7.8–7.9, 8; ADRs 0001–0002. See [design](../docs/DESIGN.md), [glossary](../docs/GLOSSARY.MD) and [ADRs](../docs/adr/).
 
 ## Outcome and scope
 
