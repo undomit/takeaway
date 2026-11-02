@@ -40,3 +40,8 @@ class InvalidOrderPricing(RuleViolation):
     def __init__(self, errors: list[dict]) -> None:
         super().__init__()
         self.errors = errors
+
+
+class StatusConflict(Conflict):
+    code = "status_conflict"
+    detail = "Order status changed concurrently; fetch the order before retrying"

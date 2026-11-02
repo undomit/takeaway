@@ -1,6 +1,6 @@
 # 018 — Implement atomic order status changes
 
-Status: planned
+Status: complete
 
 Depends on: [011](011-order-status-rules.md), [017](017-order-reads-and-polling.md)
 
@@ -21,3 +21,7 @@ Exercise every allowed transition over HTTP with appropriate roles/reasons and v
 ## Completion boundary
 
 Complete this scope and its focused verification in one reviewable change. Keep preceding functionality passing; do not leave required tests or migration changes to a later task. Follow the shared completion rules in [README](README.md).
+
+## Verification
+
+`uv run --locked pytest -W error -q` — 57 passed. Ruff lint/format and all three import-linter contracts passed. Six real-PostgreSQL scenarios cover every allowed transition, all unsupported pairs and wrong-role/required-reason errors on the contract paths, scope precedence, admin rejection, terminal polling exclusion, immutable creation replay and rollback after a flushed history insert fails. No schema change was needed.
