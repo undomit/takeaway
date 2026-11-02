@@ -10,7 +10,12 @@ from sqlalchemy.orm import Session
 from app.errors import Forbidden, NotFound
 from app.menu import service as menu
 from app.orders import repository
-from app.orders.errors import DeliveryAddressRequired, IdempotencyKeyReused, InvalidOrderPricing
+from app.orders.errors import (
+    DeliveryAddressRequired,
+    IdempotencyKeyReused,
+    InvalidOrderPricing,
+    StatusConflict,
+)
 from app.orders.idempotency import request_hash
 from app.orders.models import Order, OrderLine, OrderStatusChange
 from app.orders.pagination import OrderCursor
@@ -26,10 +31,11 @@ from app.orders.schemas import (
     OrderPage,
     OrderSnapshot,
     OrderSummary,
+    StatusChangeIn,
     StatusChangeOut,
     creation_receipt,
 )
-from app.orders.state_machine import initial_status_change
+from app.orders.state_machine import check_transition, initial_status_change
 from app.payments.errors import PaymentDeclined, PaymentUnavailable
 from app.payments.gateway import PaymentGateway, PaymentOutcome
 from app.restaurants import service as restaurants
@@ -221,3 +227,36 @@ def list_orders(session: Session, user: User, query: OrderListQuery) -> OrderPag
     return OrderPage(
         items=[OrderSummary.model_validate(row) for row in items], next_cursor=next_cursor
     )
+
+
+def change_status(
+    session: Session, user: User, order_id: UUID, request: StatusChangeIn
+) -> OrderDetail:
+    """Compare-and-set and its append-only event commit as one transaction."""
+    try:
+        if user.role not in {Role.CUSTOMER, Role.STAFF}:
+            raise Forbidden()
+        order = repository.get_visible(session, user, order_id)
+        if order is None:
+            raise NotFound()
+        checked = check_transition(order.status, request.to_status, user.role, request.reason)
+        if not repository.update_status(session, order.id, checked.from_status, checked.to_status):
+            raise StatusConflict()
+        repository.append_status_change(
+            session,
+            OrderStatusChange(
+                order_id=order.id,
+                from_status=checked.from_status,
+                to_status=checked.to_status,
+                actor_user_id=user.id,
+                actor_role=checked.actor_role,
+                reason=checked.reason,
+            ),
+        )
+        session.refresh(order)
+        detail = _detail(session, order)
+        session.commit()
+        return detail
+    except Exception:
+        session.rollback()
+        raise

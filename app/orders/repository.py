@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 from uuid import UUID
 
-from sqlalchemy import Select, false, select, tuple_
+from sqlalchemy import Select, false, func, select, tuple_, update
 from sqlalchemy.orm import Session
 
 from app.orders.models import Order, OrderLine, OrderStatusChange
@@ -99,3 +99,13 @@ def list_visible(
     if limit is not None:
         query = query.limit(limit)
     return list(session.scalars(query))
+
+
+def update_status(session: Session, order_id: UUID, expected: str, target: str) -> bool:
+    result = session.execute(
+        update(Order)
+        .where(Order.id == order_id, Order.status == expected)
+        .values(status=target, updated_at=func.now())
+        .execution_options(synchronize_session=False)
+    )
+    return result.rowcount == 1

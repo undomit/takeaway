@@ -188,3 +188,17 @@ class OrderPage(BaseModel):
 
 class ActiveOrders(BaseModel):
     items: list[OrderSummary]
+
+
+class StatusChangeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    to_status: Status
+    reason: (
+        Annotated[str, StringConstraints(strict=True, strip_whitespace=True, max_length=1000)]
+        | None
+    ) = None
+
+    @field_validator("reason")
+    @classmethod
+    def normalize_reason(cls, reason: str | None) -> str | None:
+        return reason or None

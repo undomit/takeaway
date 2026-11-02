@@ -20,6 +20,7 @@ from app.orders.schemas import (
     OrderDetail,
     OrderListQuery,
     OrderPage,
+    StatusChangeIn,
 )
 from app.payments.dependencies import PaymentGatewayDep
 from app.users.models import User
@@ -67,3 +68,14 @@ def read_order(
     _query: Annotated[NoQueryParameters, Query()],
 ) -> OrderDetail:
     return service.get_order(session, user, oid)
+
+
+@router.post("/{oid}/status-changes", response_model=OrderDetail)
+def change_status(
+    oid: UUID,
+    request: StatusChangeIn,
+    actor: Annotated[User, require_role(Role.CUSTOMER, Role.STAFF)],
+    session: SessionDep,
+    _query: Annotated[NoQueryParameters, Query()],
+) -> OrderDetail:
+    return service.change_status(session, actor, oid, request)
