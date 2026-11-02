@@ -1,6 +1,8 @@
-"""Translate domain failures without replacing FastAPI validation handlers."""
+"""Translate domain failures and preserve safe FastAPI validation responses."""
 
 from fastapi import FastAPI, Request
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.errors import (
@@ -43,5 +45,15 @@ def domain_error_handler(request: Request, exc: DomainError) -> JSONResponse:
     )
 
 
+async def safe_validation_error_handler(request: Request, exc: RequestValidationError):
+    # Keep FastAPI's detail-list response, without reflecting request passwords or
+    # whole submitted objects in the optional input metadata.
+    errors = [
+        {key: value for key, value in error.items() if key != "input"} for error in exc.errors()
+    ]
+    return await request_validation_exception_handler(request, RequestValidationError(errors))
+
+
 def register_exception_handlers(application: FastAPI) -> None:
     application.add_exception_handler(DomainError, domain_error_handler)
+    application.add_exception_handler(RequestValidationError, safe_validation_error_handler)
