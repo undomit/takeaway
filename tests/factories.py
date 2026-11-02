@@ -1,4 +1,4 @@
-"""Small test-data factories; domain factories arrive with their models."""
+"""Small test-data factories; account hashes here are placeholders, not login credentials."""
 
 from sqlalchemy import Column, Integer, MetaData, String, Table, insert
 from sqlalchemy.orm import Session
@@ -14,3 +14,25 @@ probe = Table(
 
 def create_probe(session: Session, label: str) -> int:
     return session.scalar(insert(probe).values(label=label).returning(probe.c.id))
+
+
+def create_restaurant(session: Session, *, slug: str = "example-restaurant", **attributes):
+    from app.restaurants import repository
+    from app.restaurants.models import Restaurant
+
+    values = {"name": "Example Restaurant", "delivery_fee_minor": 0}
+    values.update(attributes)
+    return repository.add(session, Restaurant(slug=slug, **values))
+
+
+def create_user(session: Session, *, email: str = "customer@example.test", **attributes):
+    from app.users import repository
+    from app.users.models import Role, User
+
+    values = {
+        "full_name": "Example Customer",
+        "password_hash": "test-only-placeholder-hash",
+        "role": Role.CUSTOMER,
+    }
+    values.update(attributes)
+    return repository.add(session, User(email=email, **values))

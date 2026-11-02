@@ -67,6 +67,7 @@ def database_engines():
     support_created = False
     try:
         config = Config(str(PROJECT_ROOT / "alembic.ini"))
+        config.attributes["runtime_role"] = runtime.engine.url.username
         with owner.begin() as connection:
             config.attributes["connection"] = connection
             command.upgrade(config, "head")
