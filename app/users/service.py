@@ -3,12 +3,12 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.errors import InvalidCredentials
+from app.errors import Forbidden, InvalidCredentials, NotAuthenticated
 from app.security import dummy_password_hash, hash_password, verify_password
 from app.users import repository
 from app.users.errors import EmailInUse
 from app.users.models import Role, User
-from app.users.schemas import AccountCreateIn, normalize_email
+from app.users.schemas import AccountCreateIn, ChangePasswordIn, ProfileUpdateIn, normalize_email
 
 
 def get_by_id(session: Session, user_id: int) -> User | None:
@@ -61,3 +61,56 @@ def authenticate(session: Session, email: str, password: str) -> User:
     if user is None or not user.is_active or not valid_password:
         raise InvalidCredentials()
     return user
+
+
+def _lock_authenticated(session: Session, current_user: User) -> User:
+    # Capture the authenticated version before populate_existing refreshes the
+    # same ORM instance. Recheck under lock if revocation raced authentication.
+    token_version = current_user.token_version
+    user = repository.get_for_update(session, current_user.id)
+    if user is None or not user.is_active or user.token_version != token_version:
+        raise NotAuthenticated()
+    return user
+
+
+def update_profile(session: Session, current_user: User, profile: ProfileUpdateIn) -> User:
+    try:
+        user = _lock_authenticated(session, current_user)
+        if user.role != Role.CUSTOMER:
+            raise Forbidden()
+        if "full_name" in profile.model_fields_set:
+            user.full_name = profile.full_name
+        if "saved_address" in profile.model_fields_set:
+            address = profile.saved_address
+            user.address_line1 = address.address_line1 if address else None
+            user.address_line2 = address.address_line2 if address else None
+            user.postcode = address.postcode if address else None
+            user.phone = address.phone if address else None
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    return user
+
+
+def log_out_everywhere(session: Session, current_user: User) -> None:
+    try:
+        user = _lock_authenticated(session, current_user)
+        user.token_version += 1
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
+def change_password(session: Session, current_user: User, credentials: ChangePasswordIn) -> None:
+    try:
+        user = _lock_authenticated(session, current_user)
+        if not verify_password(credentials.current_password.get_secret_value(), user.password_hash):
+            raise InvalidCredentials()
+        user.password_hash = hash_password(credentials.new_password.get_secret_value())
+        user.token_version += 1
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
