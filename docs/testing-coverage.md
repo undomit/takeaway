@@ -60,4 +60,7 @@ uv run --locked lint-imports
 Task 020 result: **82 passed**, Ruff lint/format passed, all three import contracts kept. The integration fixture reported no new Alembic upgrade operations. The full suite runs serially; do not use pytest-xdist or share the dedicated database with another suite.
 
 
-Tasks 021–024 extend this evidence to 84 total tests, six import contracts, architecture/drift negative probes, fresh/predecessor migrations and three disposable Compose verification scripts. [The handoff](release-handoff.md) maps all initial-release requirements and records complete reproduction commands.
+Tasks 021–024 and the deferred-profile follow-up extend this evidence to 85 total tests, six import contracts, architecture/drift negative probes, fresh/predecessor migrations and three disposable Compose verification scripts. [The handoff](release-handoff.md) maps all initial-release requirements and records complete reproduction commands.
+
+
+Task 006 profile follow-up: `test_saved_address_replacement_is_atomic_and_clear_removes_all_contact_fields` in [profile flows](../tests/integration/test_profile_flows.py) checks invalid-address atomicity, name-only address preservation, complete normalized replacement (including omitted line 2) and explicit-null clearing of every stored address/contact column, using real login and PostgreSQL.

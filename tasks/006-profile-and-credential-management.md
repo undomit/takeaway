@@ -38,3 +38,10 @@ Verification:
 - Ephemeral Python/TestClient API smoke against PostgreSQL (all data rolled back, no test file added): customer/staff/admin profile reads and write permissions, address replacement/clear and invalid-body rejection, unknown-query rejection, wrong-current-password safety, successful password change, old-password rejection, fresh login, and token rejection after password change/logout.
 
 See [README.md](../README.md#profiles-and-credential-management) for usage and transaction semantics.
+
+
+## Deferred coverage follow-up — PR 024
+
+`test_saved_address_replacement_is_atomic_and_clear_removes_all_contact_fields` in [profile flows](../tests/integration/test_profile_flows.py) now exercises real customer registration/login and PostgreSQL-backed profile writes. Invalid partial/blank-phone address replacements leave both name and address unchanged; a name-only update preserves the address; a complete replacement trims fields and clears omitted line 2; explicit null clearing preserves the name and removes all four stored address/contact columns.
+
+Verification: `uv run --locked pytest tests/integration/test_profile_flows.py -W error -q` passed (one test); `uv run --locked pytest -W error -q` passed all 85 tests in 32.33 seconds. Ruff lint/format and `git diff --check` passed. The original test deferral above records the task's implementation history; this follow-up supplies the missing profile-specific regression.
