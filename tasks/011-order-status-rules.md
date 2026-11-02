@@ -1,6 +1,6 @@
 # 011 — Implement the pure order status rules
 
-Status: planned
+Status: complete (new tests deferred at the user's request)
 
 Depends on: [002](002-application-foundation.md)
 
@@ -21,3 +21,14 @@ Exhaustively assert all 147 from/to/role combinations against an independent exp
 ## Completion boundary
 
 Complete this scope and its focused verification in one reviewable change. Keep preceding functionality passing; do not leave required tests or migration changes to a later task. Follow the shared completion rules in [README](README.md).
+
+
+## Completion evidence — 2026-11-02
+
+Implemented seven statuses, active/terminal sets, immutable declarative transition rules and checked-transition results. Unsupported pairs are checked before role and required-reason checks. Optional reasons are trimmed/blank-normalized. Initial customer placement is separate from ordinary transitions. Extracted Role into a pure module with a compatible models export, keeping the state machine free of database/HTTP imports. `.venv/bin/python -m app.orders.state_machine` generates a readable contract table directly from rule data.
+
+No routes/migrations/tests were added. Verification:
+
+- `.venv/bin/python /tmp/takeaway_smoke_011.py`: passed temporary comparison of all 147 combinations against independently parsed contract rows, blank/optional/required reasons, placement and terminal statuses; generated table matched and imports included neither SQLAlchemy nor FastAPI.
+- `.venv/bin/pytest -q -W error --tb=short`: **49 passed**, including PostgreSQL migration upgrade/check.
+- `.venv/bin/ruff check .`, `.venv/bin/ruff format --check .`, `.venv/bin/lint-imports`, `git diff --check`: passed.
