@@ -197,3 +197,10 @@ Task 014 adds migration 0004 and Order/OrderLine/OrderStatusChange storage; orde
 PostgreSQL checks status/role sets, currency/hash shape, bounded amounts, quantity, price relationships, line/total arithmetic and initial history shape. One initial status change and one line per menu item/order are enforced by unique indexes/constraints. Subtotal-versus-line-sum validation remains the pricing/write service responsibility. Customer/restaurant history, partial active-order, order-line and chronological status-change indexes are present, with deterministic ID tie-breakers.
 
 Runtime can SELECT/INSERT all three tables and use identity sequences. Only orders.status/updated_at can be updated; financial/contact snapshots and order lines have no runtime update permission. History UPDATE/DELETE/TRUNCATE is denied, and runtime cannot delete/truncate orders/lines or create schema objects. Migrations/isolated cleanup use owner credentials. Repositories only query/insert/flush; they never commit. No new test files were added.
+
+
+## Mock payment gateway
+
+Task 015 adds the synchronous `payments.gateway.PaymentGateway` protocol: `create_payment(order_id,amount_minor,currency,idempotency_key)` returns a frozen PaymentResult with paid/declined/unavailable outcome. MockPaymentGateway always returns paid. The gateway contains no HTTP or persistence work; the order use case owns rollback/commit and maps declined/unavailable outcomes to payment_declined (409) and payment_unavailable (503).
+
+`PAYMENT_GATEWAY=mock` is the default and the only supported configuration; another value fails settings validation at startup. `payments.dependencies.get_payment_gateway` is overridable per app and produces the stateless mock. No external credentials are needed. Recording/declining fake behavior was verified temporarily; test fixtures/files remain deferred at the user's request. This seam is mock-only: a real provider requires DESIGN Appendix C's separate payment lifecycle, provider idempotency and recovery. No real charges, refunds, webhooks or workers are implemented.
