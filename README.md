@@ -228,4 +228,11 @@ Customers poll detail about every 10 seconds until terminal; staff poll the comp
 
 ## Container runtime
 
-Task 021 adds a non-root multi-stage application image with locked production dependencies, two Uvicorn workers, graceful SIGTERM handling and readiness/liveness probes. Compose gates the app on healthy PostgreSQL and a successful one-shot migration; app/runtime and migration-owner credentials stay separate. App/db ports are private and PostgreSQL uses its persistent named volume. JSON access logs carry safe request IDs, route templates, status and duration without private request data. See [container configuration and verification](docs/container-runtime.md); task 022 completes public TLS and proxy operations.
+Task 021 adds a non-root multi-stage application image with locked production dependencies, two Uvicorn workers, graceful SIGTERM handling and readiness/liveness probes. Compose gates the app on healthy PostgreSQL and a successful one-shot migration; app/runtime and migration-owner credentials stay separate. App/db ports are private and PostgreSQL uses its persistent named volume. JSON access logs carry safe request IDs, route templates, status and duration without private request data. See [container configuration and verification](docs/container-runtime.md); task 022 supplies [public TLS, proxy limits and backup/deployment operations](docs/deployment-operations.md).
+
+
+## TLS proxy and operations
+
+Task 022 makes nginx the sole public entry point on 80/443, with mounted certificates, HTTPS redirects, trusted forwarding/request-ID boundaries, 64 KiB body limits, buffering/timeouts and JSON gzip. Login allows 5 requests/minute with burst 10; POST /orders allows 10/minute. Both return deliberate 429s, while GET polling and status changes remain unrestricted by those limiters. The local TLS override publishes only loopback 8080/8443.
+
+The [operations runbook](docs/deployment-operations.md) covers certificate/secret provisioning, migration reruns and expand-then-contract releases, rollback limits, the 30-connection runtime pool budget, nightly host-cron backups with verified SSH transfer/retention, and restore into a separate database. Run `python3 scripts/proxy_smoke.py --image takeaway-app:local` after building the image to verify TLS, proxy limits, actual backup transfer and snapshot/history restore in disposable resources. Production hostnames, credentials, certificates, backup destination and host cron remain operator configuration.

@@ -1,0 +1,31 @@
+server {
+    listen 80 default_server;
+    server_name ${PUBLIC_HOST};
+    if ($host != "${PUBLIC_HOST}") { return 444; }
+    return 308 ${PUBLIC_ORIGIN}$request_uri;
+}
+server {
+    listen 443 ssl default_server;
+    server_name ${PUBLIC_HOST};
+    if ($host != "${PUBLIC_HOST}") { return 444; }
+    ssl_certificate /etc/nginx/tls/fullchain.pem;
+    ssl_certificate_key /etc/nginx/tls/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:TLS:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    location = /api/v1/auth/token {
+        limit_req zone=login burst=10 nodelay;
+        proxy_pass http://takeaway_app;
+    }
+    location = /api/v1/orders {
+        # Empty map key exempts GET history/polling. No creation burst allowance.
+        limit_req zone=order_create;
+        proxy_pass http://takeaway_app;
+    }
+    location / {
+        # Includes status changes and detail polling; no creation/login limiter.
+        proxy_pass http://takeaway_app;
+    }
+}
