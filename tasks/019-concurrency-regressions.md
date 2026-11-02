@@ -1,6 +1,6 @@
 # 019 — Verify concurrent checkout and status changes
 
-Status: planned
+Status: complete
 
 Depends on: [018](018-change-order-status.md)
 
@@ -21,3 +21,9 @@ For cancel/accept, exactly one succeeds and one returns 409 status_conflict; his
 ## Completion boundary
 
 Complete this scope and its focused verification in one reviewable change. Keep preceding functionality passing; do not leave required tests or migration changes to a later task. Follow the shared completion rules in [README](README.md).
+
+## Verification
+
+`uv run --locked pytest tests/integration/test_order_concurrency.py -q -W error` — 4 passed. `uv run --locked pytest -W error -q` — 61 passed. Ruff lint/format and all three import-linter contracts passed.
+
+The four scenarios race identical placements, mismatched bodies, independent customers sharing one UUID, and pending cancellation versus acceptance. Barriers run immediately before insert or after both scoped reads; PostgreSQL backend IDs prove independent connections. Each request uses real login and runtime-role commits; assertions cover receipt equality, replay header, exact order/line/event counts, gateway calls and matching winner history. Statement/lock/barrier/future timeouts bound failure, with both worker errors reported. Existing privileged fixture cleanup removes committed data before/after each case. Apps and their lazy schemas initialize sequentially before request workers start, avoiding a FastAPI/Pydantic first-use schema-construction warning under `-W error`. No production fix was needed.
