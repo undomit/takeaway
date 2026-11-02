@@ -8,10 +8,44 @@ from app.auth.dependencies import require_role
 from app.core.db import SessionDep
 from app.core.schemas import NoQueryParameters, PositiveId
 from app.restaurants import service
-from app.restaurants.schemas import RestaurantCreateIn, RestaurantOut, RestaurantUpdateIn
+from app.restaurants.schemas import (
+    AcceptingOrdersIn,
+    RestaurantCreateIn,
+    RestaurantListQuery,
+    RestaurantOut,
+    RestaurantPage,
+    RestaurantUpdateIn,
+)
 from app.users.models import Role, User
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
+
+
+@router.get("", response_model=RestaurantPage)
+def list_restaurants(
+    query: Annotated[RestaurantListQuery, Query()], session: SessionDep
+) -> RestaurantPage:
+    return service.list_restaurants(session, query)
+
+
+@router.get("/{rid}", response_model=RestaurantOut)
+def read_restaurant(
+    rid: PositiveId, session: SessionDep, _query: Annotated[NoQueryParameters, Query()]
+) -> RestaurantOut:
+    return RestaurantOut.model_validate(service.get_by_id(session, rid))
+
+
+@router.patch("/{rid}/accepting-orders", response_model=RestaurantOut)
+def set_accepting_orders(
+    rid: PositiveId,
+    data: AcceptingOrdersIn,
+    staff: Annotated[User, require_role(Role.STAFF)],
+    session: SessionDep,
+    _query: Annotated[NoQueryParameters, Query()],
+) -> RestaurantOut:
+    return RestaurantOut.model_validate(
+        service.set_accepting_orders(session, rid, staff.restaurant_id, data.is_accepting_orders)
+    )
 
 
 @router.post("", response_model=RestaurantOut, status_code=201)

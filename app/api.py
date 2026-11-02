@@ -11,6 +11,7 @@ from app.users.router import router as users_router
 
 def create_api_router() -> APIRouter:
     router = APIRouter(prefix="/api/v1")
-    for feature in (auth_router, users_router, restaurants_router, menu_router, orders_router):
+    # Mount menu routes before the general restaurant-ID route.
+    for feature in (auth_router, users_router, menu_router, restaurants_router, orders_router):
         router.include_router(feature)
     return router

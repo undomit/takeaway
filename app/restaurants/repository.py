@@ -1,9 +1,23 @@
 """Queries and persistence for this feature's restaurant table only."""
 
-from sqlalchemy import select
+from sqlalchemy import select, tuple_
 from sqlalchemy.orm import Session
 
 from app.restaurants.models import Restaurant
+from app.restaurants.pagination import RestaurantCursor
+
+
+def list_page(session: Session, limit: int, cursor: RestaurantCursor | None) -> list[Restaurant]:
+    query = select(Restaurant)
+    if cursor is not None:
+        query = query.where(
+            tuple_(Restaurant.created_at, Restaurant.id) < (cursor.created_at, cursor.id)
+        )
+    return list(
+        session.scalars(
+            query.order_by(Restaurant.created_at.desc(), Restaurant.id.desc()).limit(limit)
+        )
+    )
 
 
 def get_by_id(session: Session, restaurant_id: int) -> Restaurant | None:
