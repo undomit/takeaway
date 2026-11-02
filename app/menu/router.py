@@ -3,11 +3,13 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Query
+from fastapi.exceptions import RequestValidationError
 
 from app.auth.dependencies import require_role
 from app.core.db import SessionDep
 from app.core.schemas import NoQueryParameters, PositiveId
 from app.menu import service
+from app.menu.errors import InvalidSalePrice
 from app.menu.schemas import (
     CategoryCreateIn,
     CategoryOut,
@@ -16,6 +18,7 @@ from app.menu.schemas import (
     ItemOut,
     ItemUpdateIn,
     MenuOut,
+    SalePriceIn,
 )
 from app.users.models import Role, User
 
@@ -68,7 +71,33 @@ def update_item(
     session: SessionDep,
     _query: EmptyQuery,
 ) -> ItemOut:
-    return ItemOut.model_validate(service.update_item(session, rid, mid, staff.restaurant_id, data))
+    try:
+        item = service.update_item(session, rid, mid, staff.restaurant_id, data)
+    except InvalidSalePrice as exc:
+        raise _price_validation_error(exc) from None
+    return ItemOut.model_validate(item)
+
+
+def _price_validation_error(exc: InvalidSalePrice) -> RequestValidationError:
+    # Resulting-record validation has the same safe detail-list shape as input
+    # validation, while the service/domain failure stays independent of HTTP.
+    return RequestValidationError([{"type": "value_error", "loc": ("body",), "msg": exc.detail}])
+
+
+@router.put("/{rid}/menu/items/{mid}/sale-price", response_model=ItemOut)
+def set_sale_price(
+    rid: PositiveId,
+    mid: PositiveId,
+    data: SalePriceIn,
+    staff: Staff,
+    session: SessionDep,
+    _query: EmptyQuery,
+) -> ItemOut:
+    try:
+        item = service.set_sale_price(session, rid, mid, staff.restaurant_id, data)
+    except InvalidSalePrice as exc:
+        raise _price_validation_error(exc) from None
+    return ItemOut.model_validate(item)
 
 
 @router.post("/{rid}/menu/items/{mid}/archive", response_model=ItemOut)

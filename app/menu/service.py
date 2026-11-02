@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.errors import NotFound
 from app.menu import repository
-from app.menu.errors import ItemArchived, ItemUnavailable
+from app.menu.errors import InvalidSalePrice, ItemArchived, ItemUnavailable
 from app.menu.models import MenuCategory, MenuItem
 from app.menu.schemas import (
     CategoryCreateIn,
@@ -18,6 +18,7 @@ from app.menu.schemas import (
     ItemUpdateIn,
     MenuCategoryOut,
     MenuOut,
+    SalePriceIn,
 )
 from app.restaurants import service as restaurants
 
@@ -119,8 +120,53 @@ def update_item(
             raise ItemArchived()
         if "category_id" in data.model_fields_set:
             _category(session, restaurant_id, data.category_id)
+        normal_price = (
+            data.price_minor if "price_minor" in data.model_fields_set else item.price_minor
+        )
+        sale_price = (
+            data.sale_price_minor
+            if "sale_price_minor" in data.model_fields_set
+            else item.sale_price_minor
+        )
+        _validate_sale_price(normal_price, sale_price)
         for field, value in data.model_dump(exclude_unset=True).items():
             setattr(item, field, value)
+    return item
+
+
+def _validate_sale_price(price_minor: int, sale_price_minor: int | None) -> None:
+    if sale_price_minor is not None and not 0 < sale_price_minor < price_minor:
+        raise InvalidSalePrice()
+
+
+def percentage_to_sale_price(price_minor: int, percentage_off: str) -> int:
+    """Convert a validated percentage string once, with integer half-up rounding."""
+    whole, _, fraction = percentage_off.partition(".")
+    basis_points = int(whole) * 100 + int(fraction.ljust(2, "0"))
+    result = (price_minor * (10000 - basis_points) + 5000) // 10000
+    _validate_sale_price(price_minor, result)
+    return result
+
+
+def set_sale_price(
+    session: Session,
+    restaurant_id: int,
+    item_id: int,
+    staff_restaurant_id: int | None,
+    data: SalePriceIn,
+) -> MenuItem:
+    with _write(session):
+        restaurants.get_for_staff(session, restaurant_id, staff_restaurant_id)
+        item = _item(session, restaurant_id, item_id)
+        if item.is_archived:
+            raise ItemArchived()
+        sale_price = (
+            percentage_to_sale_price(item.price_minor, data.percentage_off)
+            if "percentage_off" in data.model_fields_set
+            else data.sale_price_minor
+        )
+        _validate_sale_price(item.price_minor, sale_price)
+        item.sale_price_minor = sale_price
     return item
 
 

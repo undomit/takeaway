@@ -10,6 +10,7 @@ from pydantic import (
     StrictBool,
     StringConstraints,
     field_serializer,
+    field_validator,
     model_validator,
 )
 
@@ -59,6 +60,29 @@ class ItemUpdateIn(PartialInput):
     description: Description = Field(default=None)
     price_minor: Price = Field(default=None)
     is_available: StrictBool = Field(default=None)
+    sale_price_minor: Price | None = None
+
+
+class SalePriceIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    sale_price_minor: Price | None = None
+    percentage_off: Annotated[
+        str,
+        StringConstraints(strict=True, pattern=r"^(?:0|[1-9][0-9]?)(?:\.[0-9]{1,2})?$"),
+    ] = Field(default=None)
+
+    @field_validator("percentage_off")
+    @classmethod
+    def require_positive_percentage(cls, value: str) -> str:
+        if value in {"0", "0.0", "0.00"}:
+            raise ValueError("Percentage must be greater than zero and less than 100")
+        return value
+
+    @model_validator(mode="after")
+    def require_one_price(self) -> "SalePriceIn":
+        if len(self.model_fields_set) != 1:
+            raise ValueError("Supply exactly one of sale_price_minor or percentage_off")
+        return self
 
 
 class CategoryOut(BaseModel):
