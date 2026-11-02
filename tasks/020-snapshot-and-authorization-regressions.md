@@ -1,6 +1,6 @@
 # 020 — Verify snapshots and the full authorization matrix
 
-Status: planned
+Status: complete
 
 Depends on: [018](018-change-order-status.md)
 
@@ -21,3 +21,11 @@ Run the real-PostgreSQL integration suite; verify no auth dependency is mocked, 
 ## Completion boundary
 
 Complete this scope and its focused verification in one reviewable change. Keep preceding functionality passing; do not leave required tests or migration changes to a later task. Follow the shared completion rules in [README](README.md).
+
+## Verification and coverage
+
+The completed [coverage matrix](../docs/testing-coverage.md) maps every DESIGN §8 permission boundary and §10 scenario to named tests, reusing foundation/authentication and tasks 017–019 where coverage already exists. New cross-feature scenarios use real customer registration/login, admin onboarding of two restaurants/staff, and unmocked bearer authentication. Snapshot tests cover both saved and one-off addresses; token lifecycle covers all three roles; actual runtime SQL proves append-only permissions. Pure tests close deferred status/pricing/hash coverage, including all 147 status/role combinations.
+
+A deterministic interleaving exposed a polling bug: an order read as pending could include a newly committed acceptance event. Detail now reads mutable status/timestamps/history in one scoped SQL statement; immutable lines remain separate. The regression proves a consistent earlier response and the new state on the next poll, without locking reads.
+
+`uv run --locked pytest -W error -q` — 82 passed, including real-PostgreSQL and committed concurrency scenarios. `uv run --locked ruff check .`, `uv run --locked ruff format --check .` and `uv run --locked lint-imports` passed (3 contracts kept). Integration setup runs Alembic upgrade/check under migration-owner credentials and requests under restricted runtime credentials. No schema change was required.

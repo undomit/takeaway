@@ -185,25 +185,27 @@ def place_order(
         raise
 
 
-def _detail(session: Session, order: Order) -> OrderDetail:
+def _detail(
+    session: Session, order: Order, history: list[OrderStatusChange] | None = None
+) -> OrderDetail:
     snapshot = _receipt(session, order)
+    if history is None:
+        history = repository.list_status_changes(session, order.id)
     return OrderDetail(
         **snapshot.model_dump(exclude={"status"}),
         customer_id=order.customer_id,
         status=order.status,
         updated_at=order.updated_at,
-        status_changes=tuple(
-            StatusChangeOut.model_validate(change)
-            for change in repository.list_status_changes(session, order.id)
-        ),
+        status_changes=tuple(StatusChangeOut.model_validate(change) for change in history),
     )
 
 
 def get_order(session: Session, user: User, order_id: UUID) -> OrderDetail:
-    order = repository.get_visible(session, user, order_id)
-    if order is None:
+    result = repository.get_visible_detail(session, user, order_id)
+    if result is None:
         raise NotFound()
-    return _detail(session, order)
+    order, history = result
+    return _detail(session, order, history)
 
 
 def list_orders(session: Session, user: User, query: OrderListQuery) -> OrderPage | ActiveOrders:

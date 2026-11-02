@@ -109,3 +109,22 @@ def update_status(session: Session, order_id: UUID, expected: str, target: str) 
         .execution_options(synchronize_session=False)
     )
     return result.rowcount == 1
+
+
+def get_visible_detail(
+    session: Session, user: User, order_id: UUID
+) -> tuple[Order, list[OrderStatusChange]] | None:
+    """Read mutable status/timestamps and history at one statement snapshot.
+
+    Immutable lines may safely be loaded afterwards without taking a read lock.
+    """
+    rows = session.execute(
+        visible_to(user)
+        .add_columns(OrderStatusChange)
+        .outerjoin(OrderStatusChange, OrderStatusChange.order_id == Order.id)
+        .where(Order.id == order_id)
+        .order_by(OrderStatusChange.created_at, OrderStatusChange.id)
+    ).all()
+    if not rows:
+        return None
+    return rows[0][0], [change for _, change in rows if change is not None]
