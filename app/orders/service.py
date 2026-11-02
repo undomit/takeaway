@@ -7,18 +7,25 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.errors import Forbidden, NotFound
 from app.menu import service as menu
 from app.orders import repository
 from app.orders.errors import DeliveryAddressRequired, IdempotencyKeyReused, InvalidOrderPricing
 from app.orders.idempotency import request_hash
 from app.orders.models import Order, OrderLine, OrderStatusChange
+from app.orders.pagination import OrderCursor
 from app.orders.pricing import price_order
 from app.orders.schemas import (
+    ActiveOrders,
     AddressSnapshot,
     CreationReceipt,
     OrderCreateIn,
+    OrderDetail,
     OrderLineOut,
+    OrderListQuery,
+    OrderPage,
     OrderSnapshot,
+    OrderSummary,
     StatusChangeOut,
     creation_receipt,
 )
@@ -27,6 +34,7 @@ from app.payments.errors import PaymentDeclined, PaymentUnavailable
 from app.payments.gateway import PaymentGateway, PaymentOutcome
 from app.restaurants import service as restaurants
 from app.users import service as users
+from app.users.models import User
 from app.users.roles import Role
 
 
@@ -169,3 +177,47 @@ def place_order(
     except Exception:
         session.rollback()
         raise
+
+
+def _detail(session: Session, order: Order) -> OrderDetail:
+    snapshot = _receipt(session, order)
+    return OrderDetail(
+        **snapshot.model_dump(exclude={"status"}),
+        customer_id=order.customer_id,
+        status=order.status,
+        updated_at=order.updated_at,
+        status_changes=tuple(
+            StatusChangeOut.model_validate(change)
+            for change in repository.list_status_changes(session, order.id)
+        ),
+    )
+
+
+def get_order(session: Session, user: User, order_id: UUID) -> OrderDetail:
+    order = repository.get_visible(session, user, order_id)
+    if order is None:
+        raise NotFound()
+    return _detail(session, order)
+
+
+def list_orders(session: Session, user: User, query: OrderListQuery) -> OrderPage | ActiveOrders:
+    if query.active == "true":
+        if user.role != Role.STAFF:
+            raise Forbidden()
+        return ActiveOrders(
+            items=[
+                OrderSummary.model_validate(row)
+                for row in repository.list_visible(session, user, active=True)
+            ]
+        )
+    cursor = OrderCursor.decode(query.cursor) if query.cursor is not None else None
+    rows = repository.list_visible(session, user, limit=query.limit + 1, cursor=cursor)
+    items = rows[: query.limit]
+    next_cursor = (
+        OrderCursor(items[-1].created_at, items[-1].id).encode()
+        if len(rows) > query.limit
+        else None
+    )
+    return OrderPage(
+        items=[OrderSummary.model_validate(row) for row in items], next_cursor=next_cursor
+    )
