@@ -1,18 +1,26 @@
-"""Customer-only atomic order placement; read/status routes arrive later."""
+"""Atomic checkout and scoped order history/detail/polling."""
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Query, Response
 from fastapi.exceptions import RequestValidationError
 
-from app.auth.dependencies import require_role
+from app.auth.dependencies import CurrentUser, require_role
 from app.core.config import SettingsDep
 from app.core.db import SessionDep
 from app.core.schemas import NoQueryParameters
 from app.orders import service
 from app.orders.dependencies import IdempotencyKey
 from app.orders.errors import InvalidOrderPricing
-from app.orders.schemas import CreationReceipt, OrderCreateIn
+from app.orders.schemas import (
+    ActiveOrders,
+    CreationReceipt,
+    OrderCreateIn,
+    OrderDetail,
+    OrderListQuery,
+    OrderPage,
+)
 from app.payments.dependencies import PaymentGatewayDep
 from app.users.models import User
 from app.users.roles import Role
@@ -42,3 +50,20 @@ def place_order(
     if placed.replayed:
         response.headers["Idempotent-Replayed"] = "true"
     return placed.receipt
+
+
+@router.get("", response_model=OrderPage | ActiveOrders)
+def list_orders(
+    query: Annotated[OrderListQuery, Query()], user: CurrentUser, session: SessionDep
+) -> OrderPage | ActiveOrders:
+    return service.list_orders(session, user, query)
+
+
+@router.get("/{oid}", response_model=OrderDetail)
+def read_order(
+    oid: UUID,
+    user: CurrentUser,
+    session: SessionDep,
+    _query: Annotated[NoQueryParameters, Query()],
+) -> OrderDetail:
+    return service.get_order(session, user, oid)

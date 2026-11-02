@@ -1,6 +1,6 @@
 # 017 — Implement scoped order detail, history and polling lists
 
-Status: planned
+Status: complete
 
 Depends on: [016](016-place-orders-atomically.md)
 
@@ -23,3 +23,7 @@ Parametrise detail/list across customer A/B, staff X/Y and admin with seeded ord
 ## Completion boundary
 
 Complete this scope and its focused verification in one reviewable change. Keep preceding functionality passing; do not leave required tests or migration changes to a later task. Follow the shared completion rules in [README](README.md).
+
+## Verification
+
+`uv run --locked pytest -W error` — 51 passed. `uv run --locked ruff check .`, `uv run --locked ruff format --check .` and `uv run --locked lint-imports` passed. The PostgreSQL fixture upgrades and checks Alembic with the owner and runs requests with restricted runtime credentials. Two focused scenarios cover scoped detail/history, equal-timestamp pagination, strict queries, 53 active orders and read-only polling.

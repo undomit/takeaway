@@ -19,6 +19,7 @@ from pydantic import (
 
 from app.core.address import AddressIn
 from app.core.schemas import JsonId
+from app.orders.pagination import OrderCursor
 from app.orders.pricing import PricedLine, PricedOrder
 from app.orders.status import Status
 from app.orders.values import Selections
@@ -142,3 +143,48 @@ def creation_receipt(snapshot: OrderSnapshot, initial_change: StatusChangeOut) -
         raise ValueError("Creation receipt requires the initial placement status change")
     fields = {name: getattr(snapshot, name) for name in OrderSnapshot.model_fields}
     return CreationReceipt(**fields, status=initial_change.to_status)
+
+
+class OrderListQuery(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    limit: Annotated[int, Field(ge=1, le=100)] = 50
+    cursor: str | None = None
+    active: Literal["true", "false"] = "false"
+
+    @field_validator("cursor")
+    @classmethod
+    def validate_cursor(cls, value: str | None) -> str | None:
+        if value is not None:
+            OrderCursor.decode(value)
+        return value
+
+    @model_validator(mode="after")
+    def active_has_no_pagination(self) -> "OrderListQuery":
+        if self.active == "true" and self.model_fields_set & {"limit", "cursor"}:
+            raise ValueError("Active orders do not accept limit or cursor")
+        return self
+
+
+class OrderSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID4
+    customer_id: JsonId
+    restaurant_id: JsonId
+    status: Status
+    currency: str
+    paid: StrictBool
+    subtotal_minor: int
+    delivery_fee_minor: int
+    total_minor: int
+    refund_owed: StrictBool
+    created_at: UtcTimestamp
+    updated_at: UtcTimestamp
+
+
+class OrderPage(BaseModel):
+    items: list[OrderSummary]
+    next_cursor: str | None
+
+
+class ActiveOrders(BaseModel):
+    items: list[OrderSummary]
